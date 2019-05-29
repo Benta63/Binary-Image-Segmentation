@@ -9,7 +9,7 @@ class ImageData(object):
 
 	def __init__(self, imagePath):
 		self.imageName = imagePath
-		self.image = cv2.imread(imagePath, 0)
+		self.image = cv2.imread(imagePath, 1)
 		self.type = len(self.image.shape)
 
 	#Accessors
@@ -17,7 +17,7 @@ class ImageData(object):
 		return copy.deepcopy(self.image)
 
 	def getDim(self):
-		return copy.deepcopy(self.type)
+		return self.type
 
 	def getShape(self):
 		return self.image.shape
