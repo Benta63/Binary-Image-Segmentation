@@ -1,0 +1,47 @@
+Algorithms:
+random_walker 
+active_contour -- Useless
+felzenszwalb
+slic
+quickshift
+find_boundaries -- Useless
+mark_boundaries -- Useless
+clear_border -- Useless
+join_segmentations -- Useless
+relabel_from_one -- Useless
+watershed
+chan_vese
+morphological_geodesic_active_contour -- Can be good
+morphological_chan_vese
+inverse_gaussian_gradient -- Passes into Morphological_geodesic_active_contour
+circle_level_set -- Useless
+checkerboard_level_set --Useless
+flood
+flood_fill
+
+Useful Algorithms
+random_walker
+	Variables: labels, beta, tol, multichannel, spacing
+felzenszwalb
+	Variables: scale, sigma, min_size, multichannel
+slic
+	Variables: n_segments, compactness, max_iter, sigma, spacing, multichanel
+quickshift
+	Variables: ratio, kernel_size, max_dist, sigma, random_seed
+watershed
+	Variables: markers(labels), connectivity, offset, mask, compactness
+chan_vese
+	Variables: mu, lambda1, lambda2, tol, max_iter, dt, init_level_set
+morphological_chan_vese
+	Variables: Iterations, inti_level_set, smoothing, lambda1, lambda2
+morphological_geodesic_active_contour
+	This uses inverse_gaussian_gradient
+		Variables of gaussian: alpha, sigma
+		Variables of geodesic: iterations, init_level_set, smoothing, threshold, balloon
+flood
+	Variables: seed_point, selem, connectivity, tolerance
+flood_fill
+	seed_point, new_value, selem, connectivity, tolerance
+
+Encoded variables: 
+labels (ndarray), beta(float, min 0), tolerance (decimal, small), multichannel (bool -- RGB vs Grayscale), Need more.
