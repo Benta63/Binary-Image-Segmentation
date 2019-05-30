@@ -1,3 +1,4 @@
+#Lightly Coupled with ImageData class
 #A class with accessors and modifiers for all the parameters used in
 #the skimage algorithms
 import ImageData
@@ -6,9 +7,9 @@ class AlgorithmParams(object):
 	
 	def __init__(self, img, algo="", label=[], beta=0.0, tol=0.0, scale=0.0,
 		sigma=0.0, min_size=0, n_segments=2, compactness=0.001, iters=1,
-		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, selem=[]
-		, connectivity=1, mu=0.0, lambda1=1.0, lambda2
-		=1.0, dt=0.0, init_level_set=None, smoothing=1, alpha=0.0, balloon
+		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, selem=None
+		, connectivity=1, mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0,
+		init_level_set=None, smoothing=1, threshold='auto', alpha=0.0, balloon
 		=0.0, seed_point=[], new_value=""):
 		#img is an ImageData object
 		self.Image = img
@@ -32,12 +33,16 @@ class AlgorithmParams(object):
 		self.lambda1 = lambda1
 		self.lambda2 = lambda2
 		self.dt = dt
+		#May want to make seperate level sets for different functions
+			#e.g. Morph_chan_vese vs morph_geo_active_contour
 		self.init_level_set = init_level_set
 		self.smoothing = smoothing
+		self.threshold=threshold
 		self.alpha = alpha
 		self.balloon = balloon
 		self.seed_point = [random.randrange(0, dim) for dim in img.getShape()]
 		self.new_value = new_value
+
 
 	#Accessors
 	def getImage(self): return self.Image
@@ -55,6 +60,7 @@ class AlgorithmParams(object):
 	def getKernel(self): return self.kernel_size
 	def getMaxDist(self): return self.max_dist
 	def getSeed(self): return self.seed
+	def getSelem(self): return self.selem
 	def getConnect(self): return self.connectivity
 	def getMu(self): return self.mu
 	def getLambdaOne(self): return self.lambda1
@@ -62,9 +68,12 @@ class AlgorithmParams(object):
 	def getDT(self): return self.dt
 	def getInitLvlSet(self): return self.init_level_set
 	def getSmoothing(self): return self.smoothing
+	def getThresh(self): return self.threshold
+	def getAlpha(self): return self.alpha
 	def getBalloon(self): return self.balloon
 	def getSeedPoint(self): return self.seed_point
 	def getNewVal(self): return self.new_value
+
 
 	#Modifiers
 	def changeImage(self, newImg):
@@ -115,6 +124,10 @@ class AlgorithmParams(object):
 		self.init_level_set = lvlSet
 	def changeSmoothing(self, smoothing):
 		self.smoothing = smoothing
+	def changeThresh(self, threshold):
+		self.threshold = threshold
+	def changeAlpha(self, alpha):
+		self.alpha = alpha
 	def changeBalloon(self, balloon):
 		self.balloon = balloon
 	def changeSeedPoint(self, seedPt):

@@ -1,4 +1,4 @@
-
+#Strongly coupled with AlgorithmParams class
 import numpy as np
 import pandas as pd
 import copy
@@ -6,129 +6,113 @@ import skimage
 from skimage import segmentation
 from itertools import combinations
 
+import ImageData
+import AlgorithmParams
+
 '''
 This class will run through all the algorithms in skimage.segmentation
 and change the parameters
 '''
 class AlgorithmSpace(object):
-	def __init__(self):
-		#image is a ImageData object
-		self.stuf = 1
-		
+	def __init__(self, parameters):
+		#parameters is a AlgorithmParams object
+
+		self.params = parameters
+		#Whether this is a multichannel array or grayscale
+		self.channel = False
+		if (self.params.getImage().getType() > 2):
+			#This is at least a 3D array, so multichannel
+			self.channel = True
 	
 
 	#Algorithms
+	'''
+	#Random walker algorithm: 
+	https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_random_walker_segmentation.html
+	Segments an image from set markers. Works
+	on grayscale and multichannel images,
 
-	#Needs testing
-	#Random walker algorithm: For gray-level images, 
+	#Returns a labeled image (ndarray)
+
 	#Variables:
-	#data -> Image (ndarray),
-	#labels --> Same shape as data, ndarray
-	#beta --> penalization coefficient?? High beta = more difficult diffusion
-	#beta will most likely be a list, as different coefficients may be better for different images
-	#mode is normally bf, but should use cg_mg for images smaller than 512X512
-	#tol is the ????
-	#copy should be True
-	#multichannel -- False is gray image, True if multichannel
-	#return_full_prob -> should be false
-	#spacing -> Start at none
+	data -> Image (ndarray)
+	labels -> Same shape as data, ndarray
+	beta -> float, penalization coefficient High beta = more difficult
+	diffusion. beta will most likely be a list, as different coefficients
+	may be better for different images
+	mode -> string. mode is normally bf, but should use cg_mg for images smaller than 512X512
+	tol is the tolerance to achieve when solving a linear system
+	copy should be True. Whether or not to overwrite label array
+	multichannel -- False is gray image, True if multichannel image
+	return_full_prob -> should be false
+	spacing -> spacing in between pixels, Going to leave this at 1 fr now
 
-	#Returns a list of labels for each beta value in the beta list
-	def runRandomWalker(data, labels, beta):
+	'''
+	def runRandomWalker(self):
 		#Let's deterime what mode to use
 		mode = ""
-		if len(data.getImage()) < 512 :
+		if len(self.params.getdata.getImage().getImage()) < 512 :
 			mode = "cg_mg"
 		else:
 			mode = "bf"
 		
 		#If data is 2D, then this is a grayscale, so multichannel is 
 		#false
-		channel = False
-		if (len(data.getShape()) > 2):
-			#This is at least a 3D array, so multichannel
-			channel = True
-		print(channel)
-		new_labels = [skimage.segmentation.random_walker(data.getImage(), labels, b, mode, copy=False, multichannel=channel, return_full_prob=True) for b in beta]
-		#for b in beta:
-			#for t in tol:
-			#tol is after mode and before multichannel
-			
-		#	new_labels.append(scimage.segmentation.random_walker(data.getImage(), labels, b, mode, copy=False, multichannel=channel, return_full_prob=True))
+		
+		output = skimage.segmentation.random_walker(self.params.getImage()
+			, self.params.getLabel(), beta=self.params.getBeta(), mode=mode,
+			tol=self.params.getTolerance, copy=True, multichannel=self.channel,
+			return_full_prob=False) 
+		return output
 
-		return new_labels
-
-	#Needs testing
-	#Active contour model algorithm. 
-	#Variables:
-	#image: ndarray of input image
-	#snake: ndarray, start point. Should vary
-	#alpha: float, snake length/shape param. Higher vals make snake contract faster
-	#beta: float snake smoothness?? Higher value makes smoother snakes
-	#w_line: float controls attraction to brightness. Use negative values to attract towards darker regions
-	#w_edge: float controls attraction to edges. Negative = repels snake from edges
-	#gamma: float time-step
-	'''bc: Boundary conditions for worm. ‘periodic’ attaches the two ends of the snake,
-	 ‘fixed’ holds the end-points in place, and ‘free’ allows free movement of the ends. 
-	 ‘fixed’ and ‘free’ can be combined by parsing ‘fixed-free’, ‘free-fixed’. Parsing 
-	 ‘fixed-fixed’ or ‘free-free’ yields same behaviour as ‘fixed’ and ‘free’, respectively.
 	'''
-	#make_px_move: float max pixel distance move per iterations
-	#max_iterations: int
-	#convergence: float convergence criteria
-
-	#Returns ndarray, optimized snake same shape as input snake
-	#Should make lists of alpha, beta, w_line, w_edge, gamma, make_px_move, max_iterations, convergence vals to try
-	def runActiveContour(image, snake, alpha, beta, w_line, w_edge, gamma, 
-		max_px_move, max_iteration, convergence, self):
-		new_snakes = []
-		#active_contour has a bc variable with these five options
-		BC = ['periodic', 'fixed', 'free', 'fixed-free', 'free-fixed']
-		#Shuffling all the variables and finding the snake for each
-		new_snakes = [skimage.segmentation.active_contour(image.getImage(),
-			snake, a, b, wL, wE, g, bc, maxPx, iters, conv) for a in
-			alpha for b in beta for wL in w_Line for wE in w_edge for
-			g in gamma for maxPx in max_px_move for iters in max_iterations
-			for conv in convergence]
-
-		return new_snakes
-
-	#Needs testing
-	'''The felzenszwalb algorithms computes a graph based on the segmentation
+	#felzenszwalb
+	#ONLY WORKS FOR RGB
+	https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_segmentations.html
+	Computes a graph based on the segmentation
 	Produces an oversegmentation of the multichannel using min-span tree.
 	Returns an integer mask indicating the segment labels
 	#Variables
 	image -- ndarray Input image
-	scale -- float Higher means larger clusters
-	sigma -- st. dev of width of a Guassian kernel by preprocessing
-	min_size -- min component size using postprocessing
-	#miltichannel -- optional (true) -- Whether daya has multiple channels.
+	scale -- float,  Higher means larger clusters
+	sigma -- float, st. dev of width of a Guassian kernel by preprocessing
+	min_size -- int,  min component size using postprocessing
+	#multichannel -- True = multichannel, False = Grayscale
 		Don't need to mess with this. If False, image is grayscale
 	pass in lists: scale, sigma, min_size
 
 	'''
-	def ruFelzenszwalb(image, scale, sigma, min_size, self):
-		graphs = [skimage.segmentation.felzenszwalb(image.getImage(), sc, si, m_s)
-			for sc in scale for si in sigma for m_s in min_size]
-		return graphs
+	def runFelzenszwalb(self):
 
+		output = skimage.segmentation.felzenszwalb(
+			self.params.getImage().getImage(), self.params.getScale(),
+			self.params.getSigma(), self.params.getMinSize(),
+			multichannel=self.channel)
+		
+		return output
 
 	#Needs testing
-	'''slic algorithms segments k-means clustering in Color space (x, y, z)
-	Returns a 2D or 3D array of labels
+	'''
+	#slic
+	https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_segmentations.html
+	segments k-means clustering in Color space (x, y, z)
+	#Returns a 2D or 3D array of labels
+
 	#Variables
-	image -- ndarray
-	n_segments -- int = number of labels in segmented output image (approx)
+	image -- ndarray, input image
+	n_segments -- int,  number of labels in segmented output image (approx)
 		Should find a way to compute n_segments
-	compactness -- Balances color proximity and space proximity. Higher values 
-		mean more weight to space proximity (superpixels become more square/cubic)
-		#Recommended log scale values (0.01, 0.1, 1, 10, 100, etc)
-	max_iter -- int max number of iterations of k-means
-	sigma -- float or (3,) shape array of floats: wdth of Guassian smoothing kernel
-		for pre-processing for each dimesion of the image. Zero means no smoothing
-	spacing -- (3,) shape float array : voxel spacing along each image dimension.
-		defalt is uniform spacing
-	multichannel -- bool: multichannel vs grayscale
+	compactness -- float, Balances color proximity and space proximity.
+		Higher values mean more weight to space proximity (superpixels
+		become more square/cubic) #Recommended log scale values (0.01, 
+		0.1, 1, 10, 100, etc)
+	max_iter -- int, max number of iterations of k-means
+	sigma -- float or (3,) shape array of floats,  width of Guassian
+		smoothing kernel. For pre-processing for each dimesion of the
+		image. Zero means no smoothing
+	spacing -- (3,) shape float array : voxel spacing along each image
+		dimension. Defalt is uniform spacing
+	multichannel -- bool,  multichannel (True) vs grayscale (False)
 	convert2lab -- bool: Whether the image-space should be converted to Lab colorspace
 		before segmentation. Input image must be RGB to be true. If multichannel is true,
 		this is also true.
@@ -139,80 +123,243 @@ class AlgorithmSpace(object):
 	max_size factor -- proportion of max size connected segment size
 	slic_zero -- bool: run SLIC-zero, the zero parameter mode of SLIC
 
-	Should get an list of compactness, max_iter, sigma 
 	'''
-	def runSlic(image, compactness, max_iter, sigma, self):
+	def runSlic(self):
+		output = skimage.segmentation.slic(self.params.getImage(),
+			n_segments=self.params.getSegments(), compactness=
+			self.params.getCompact(), max_iter=self.params.getIters(),
+			sigma=self.params.getSigma, multichannel=self.channel)
 
-		channel = False
-		if (image.getShape()[0] > 2):
-			channel = True
-		labels = [skimage.segmentation.slic(image.getImage(), compactness=comp,
-		 max_iter=iters, sigma=s, slic_zero=False) for comp in compactness
-		 for iters in max_iter for s in sigma]
-		[labels.append(skimage.segmentation.slic(image.getImage(), compactness=comp,
-		 max_iter=iters, sigma=s, slic_zero=True)) for comp in compactness for
-		 iters in max_iter for s in sigma]
+		return output
 
-		return labels
-
-	#Needs Testing
-	'''quickshift algorithms segments images with quickshift clustering in Color (x,y) space
-	Returns ndarray segmentation mask of the labels
+	'''
+	#quickshift
+	https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_segmentations.html
+	Segments images with quickshift clustering in Color (x,y) space
+	#Returns ndarray segmentation mask of the labels
 	#Variables
-	image -- ndarray: input image
-	ratio -- balances color-space proximity & image-space proximity. Higher vals give more
-		weight to color-space
-	kernel_size: Width of Guassian kernel using smoothing. Higher means fewer clusters
-	max_dist -- float: Cut-off point for data distances. Higher means fewer clusters
-	return_tree -- bool: Whether to return the full segmentation hierachy tree and distances
-		Set as False
-	sigma -- float: Width of Guassian smoothin as preprocessing. Zero means no smoothing
-	conver2lab -- bool: leave alone
-	random_seed -- Random seed used for breacking ties. May have a list of random seeds to use
+	image -- ndarray, input image
+	ratio -- float, balances color-space proximity & image-space
+		proximity. Higher vals give more weight to color-space
+	kernel_size: float, Width of Guassian kernel using smoothing.
+		Higher means fewer clusters
+	max_dist -- float: Cut-off point for data distances. Higher 
+		means fewer clusters
+	return_tree -- bool: Whether to return the full segmentation
+		hierachy tree and distances. Set as False
+	sigma -- float: Width of Guassian smoothing as preprocessing.
+		Zero means no smoothing
+	convert2lab -- bool: leave alone
+	random_seed -- int, Random seed used for breacking ties. 
 
-
-	Pass in arrays of ratio, kernal_size, max_dist, sigma, random_seed
 	'''
-	def runQuickShift(image, ratio, kernel_size, max_dist, sigma, random_seed, self):
+	def runQuickShift(self):
+		output = skimage.segmentation.quickshift(
+			self.params.getImage().getImage(), ratio=self.params.getRatio()
+			, kernel_size=self.params.getKernel(), max_dist=
+			self.params.getMaxDist(), sigma=self.params.getSigma(),
+			random_seed=self.params.getSeed())
+		
+		return output
 
-		labels = [skimage.segmentation.quickshift(image.getImage(), r, ker, m_d,
-			sigma=s, random_seed=r_d) for r in ratio for ker in kernel_size
-			for m_d in max_dist for s in sigma for r_d in random_seed]
-		return labels	
 
+	#Write comments for below later
 
-	#Needs testing
 	'''
-	Returns a bool aray where bondaries between labeled regions are True
+	#Watershed
+	https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+	Uses user-markers. treats markers as basins and 'floods' them.
+	Especially good if overlapping objects. 
+	#Returns a labeled image ndarray
 	#Variables
-	label_img -- array of int or bool which labels different regions
-	connectivity -- int between {1, ..., label_img.ndim}
-		A pixel is a boundary pixel if any of it's neighbors has a different
-		label. Connectivity controls which pixels are considered neighbors. If
-		1 (defalt, pixels sharing an edge will be neighbors). If label = label_img.ndim
-		pixels sharing a corner are neighbors.
-	mode -- string
-		thick: any pixel not completely surrounded by pixels of the same label is marked
-			as a boundary. So, boundaries are 2 pixels thick
-		inner: outline the pixels $just inside$ of objects. background pixels are untouched
-		outer: outline pixels in the background boundaries. When two objects touch, their
-			boundary is also marked
-		subpixel: return a doubled image with pixels $between$ the original pixels and the new
-			boundary
+	image -> ndarray, input array
+	markers -> int, or int ndarray same shape as image: markers indicating
+		'basins'
+	connectivity -> ndarray, indicates neighbors for connection
+	offset -> array, same shape as image: offset of the connectivity
+	mask -> ndarray of bools (or 0s and 1s): 
+	compactness -> float, compactness of the basins Higher values make more
+		regularly-shaped basin
 
-		Mode should be inner or outer
-	background -- int: If inner/outer, need to define background. Do more research 
 	'''
-	#Returns: array of bools same shape as label_img
-'''
-	def find_boundaries(self):
-		#NEED TO TUL MORE
-		return 1
+	def runWaterShed(self):
+		output = skimage.segmentation.watershed(
+			self.params.getImage().getImage(), markers=self.params.getLabel()
+			, connectivity=self.params.getSelem(), 
+			compactness=self.params.getCompact())
+		return output
+	'''
+	#chan_vese
+	#ONLY GRAYSCALE
+	https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_chan_vese.html
+	Segments objects without clear boundaries
+	#Returns: segmentation array of algorithm. Optional: When the algorithm converges
+	#Variables
+	image -> ndarray grayscale image to be segmented
+	mu -> float, 'edge length' weight parameter. Higher mu vals make a 'round edge'
+		closer to zero will detect smaller objects
+	lambda1 -> float 'diff from average' weight param to determine if output region 
+		is True. If lower than lambda1, the region has a larger range of values than the other
+	lambda2 -> float 'diff from average' weight param to determine if output region
+		is False. If lower than lambda1, the region will have a larger range of values
+	Note: Typical values for mu are from 0-1. 
+	Note: Typical values for lambda1 & lambda2 are 1. If the background is
+		'very' different from the segmented values, in terms of distribution,
+		then the lambdas should be different from eachother
+	tol: positive float, typically (0-1), very low level set variation 
+		tolerance between iterations.
+	max_iter: uint,  max number of iterations before algorithms stops
+	dt: float, Multiplication factor applied at the calculations step
+	init_level_set: str/ndarray, defines starting level set used by
+		algorithm. Accepted values are:
+		'checkerboard': fast convergence, hard to find implicit edges
+		'disk': Somewhat slower convergence, more likely to find
+			implicit edges
+		'small disk': Slowest convergence, more likely to find implicit
+			edges
+		can also be ndarray same shape as image
+	extended_output: bool, If true, adds more returns 
+		(Final level set & energies)
+	'''
+	
+	def runChanVese(self):
+		output = skimage.segmentation.chan_vese(
+			self.params.getImage().getImage(), mu=self.params.getMu,
+				lambda1=self.params.getLambdaOne(), lambda2=
+				self.params.getLambdaTwo(), tol=self.params.getTolerance()
+				, max_iter=self.params.getIters(), dt=self.params.getDT()
+				, init_level_set=self.params.getInitLvlSet())
 
-	#Needs testing
-	def mark_moundaries(self): 
+		return output
+	'''
 
-'''
+	#morphological_chan_vese
+	#ONLY WORKS ON GRAYSCALE
+	https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.morphological_chan_vese
+	Active contours without edges. Can be used to segment images/volumes without good borders. Required that the 
+		inside of the object looks different than outside (color, shade, darker).
+	#Returns Final segmention
+	#Variables:
+	image -> ndarray of grayscale image
+	iterations -> uint, number of iterations to run
+	init_level_set: str, or array same shape as image. Accepted string
+		values are:
+		'checkerboard': Uses checkerboard_level_set
+		https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.checkerboard_level_set
+		returns a binary level set of a checkerboard
+		'circle': Uses circle_level_set
+		https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.circle_level_set
+		Creates a binary level set of a circle, given a radius and a center
+
+	smoothing: uint, number of times the smoothing operator is applied
+		per iteration. Usually around 1-4. Larger values make stuf smoother
+	lambda1: Weight param for outer region. If larger than lambda2, outer
+		region will give larger range of values than inner value
+	lambda2: Weight param for inner region. If larger thant lambda1, inner
+		region will have a larger range of values than outer region
+	'''
+	def runMorphChanVese(self):
+		output = skimage.segmentation.morphological_chan_vese(
+			self.params.getImage().getImage(), init_level_set=
+			self.params.getInitLvlSet(), smoothing=
+			self.params.getSmoothing(), lambda1=self.params.getLambdaOne()
+			, lambda2=self.params.getLambdaTwo())
+		return output
+
+	'''
+	#morphological_geodesic_active_contour
+	https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.morphological_geodesic_active_contour
+	Uses an image from inverse_gaussian_gradient in order to segment
+		object with visible, but noisy/broken borders
+	#inverse_gaussian_gradient
+	https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.inverse_gaussian_gradient
+	Compute the magnitude of the gradients in an image. returns a
+		preprocessed image suitable for above function
+	#Returns ndarray of segmented image
+	#Variables
+	gimage: array, preprocessed image to be segmented
+	iterations: uint, number of iterations to run
+	init_level_set: str, array same shape as gimage. If string, possible
+		values are:
+		'checkerboard': Uses checkerboard_level_set
+		https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.checkerboard_level_set
+		returns a binary level set of a checkerboard
+		'circle': Uses circle_level_set
+		https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.circle_level_set
+		Creates a binary level set of a circle, given a radius and a center
+	smoothing: uint, number of times the smoothing operator is applied per
+		iteration. Usually 1-4, larger values have smoother segmentation
+	threshold: Areas of image with a smaller value than the threshold
+		are borders
+	balloon: float, guides contour of low-information parts of image, 
+	
+	'''
+	def runMorphGeodesicActiveCountour(self):
+		#We run the inverse_gaussian_gradient to get the image to use
+		gimage = skimage.segmentation.inverse_gaussian_gradient(
+			self.params.getImage().getImage(), self.params.getAlpha(), 
+			self.params.getSigma())
+
+		output = morphological_geodesic_active_contour(gimage,
+			self.params.getIters(), self.params.getInitLvlSet(), smoothing=
+			self.params.getSmoothing(), threshold=self.params.getThresh(),
+			balloon= self.params.getBalloon())
+
+		return output
+	'''
+	#flood
+	#DOES NOT SUPPORT MULTICHANNEL IMAGES
+	https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_floodfill.html
+	Uses a seed point and to fill all connected points within/equal to
+		a tolerance around the seed point
+	#Returns a boolean array with 'flooded' areas being true
+	#Variables
+	image: ndarray, input image
+	seed_point: tuple/int, x,y,z referring to starting point for flood fill
+	selem: ndarray of 1's and 0's, Used to determine neighborhood of
+		each pixel
+	connectivity: int, Used to find neighborhood of each pixel. Can use this
+		or selem.
+	tolerance: float or int, If none, adjacent values must be equal to 
+		seed_point. Otherwise, how likely adjacent values are flooded.
+	'''
+
+	def runFlood(self):
+		output = skimage.segmentation.flood(self.params.getImage().getImage()
+			, self.params.getSeedPoint(), selem=self.params.getSelem(),
+			connectivity=self.params.getConnect(), tolerance=
+			self.params.getTolerance())
+		return output
+
+	'''
+	#flood_fill
+	https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_floodfill.html
+	Like a paint-bucket tool in paint. Like flood, but changes the color equal to
+		new_type
+	#Returns A filled array of same shape as the image
+	#Variables
+	image: ndarray, input image
+	seed_point: tuple or int, starting point for filling (x,y,z)
+	new_value: new value to set the fill to (e.g. color). Must agree
+		with image type
+	selem: ndarray, Used to find neighborhood of filling
+	connectivity: Also used to find neighborhood of filling if selem is
+		None
+	tolerance: float or int, If none, adjacent values must be equal to 
+		seed_point. Otherwise, how likely adjacent values are flooded.
+	inplace: bool, If true, the flood filling is applied to the image,
+		if False, the image is not modified. Default False, don't change
+	'''
+
+	def runFloodFill(self):
+		output = skimage.segmentation.flood_fill(
+			self.params.getImage().getImage(), self.params.getSeedPoint()
+			, self.params.getNewVal(), selem=self.params.getSelem(),
+			connectivity=self.params.getConnect(), tolerance=
+			self.params.getTolerance())
+
+		return output
+
 
 
 

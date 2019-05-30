@@ -17,7 +17,7 @@ class ImageData(object):
 		return copy.deepcopy(self.image)
 
 	def getDim(self):
-		return copy.deepcopy(self.type)
+		return self.type
 
 	def getShape(self):
 		return self.image.shape
