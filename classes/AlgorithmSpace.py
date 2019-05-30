@@ -12,10 +12,9 @@ This class will run through all the algorithms in skimage.segmentation
 and change the parameters
 '''
 class AlgorithmSpace(object):
-	ITERATIONS = 1
-	def __init__(self):
+	def __init__(algoParam, self):
 		#image is a ImageData object
-		self.stuf = 1
+		self.parameters = algoParam
 		
 	
 
@@ -37,10 +36,10 @@ class AlgorithmSpace(object):
 	#spacing -> Start at none
 
 	#Returns a list of labels for each beta value in the beta list
-	def runRandomWalker(data, labels, beta):
+	def runRandomWalker(self):
 		#Let's deterime what mode to use
 		mode = ""
-		if len(data.getImage()) < 512 :
+		if len(self.parameters.getImage.getImage()) < 512 :
 			mode = "cg_mg"
 		else:
 			mode = "bf"
@@ -48,11 +47,10 @@ class AlgorithmSpace(object):
 		#If data is 2D, then this is a grayscale, so multichannel is 
 		#false
 		channel = False
-		if (data.getDim() > 2):
+		if (self.parameters.getImage.getDim() > 2):
 			#This is at least a 3D array, so multichannel
 			channel = True
-		print(channel)
-		new_labels = [skimage.segmentation.random_walker(data.getImage(), labels, b, mode, copy=False, multichannel=channel) for b in beta]
+		return skimage.segmentation.random_walker()
 		#for b in beta:
 			#for t in tol:
 			#tol is after mode and before multichannel
