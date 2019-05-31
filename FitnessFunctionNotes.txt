@@ -1,0 +1,1 @@
+Go pixel by pixel. If pixel is wrong, increment counter by 1. 0 is good, higher is bad
