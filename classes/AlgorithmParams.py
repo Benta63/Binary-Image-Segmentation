@@ -1,34 +1,21 @@
-<<<<<<< HEAD
 #Lightly Coupled with ImageData class
 #A class with accessors and modifiers for all the parameters used in
 #the skimage algorithms
 from classes import ImageData
-=======
-#A class with accessors and modifiers for all the parameters used in
-#the skimage algorithms
-import ImageData
->>>>>>> master
+
 import random
 class AlgorithmParams(object):
 	
-	def __init__(self, img, algo="", label=[], beta=0.0, tol=0.0, scale=0.0,
+	def __init__(self, img, algo="", beta=0.0, tol=0.0, scale=0.0,
 		sigma=0.0, min_size=0, n_segments=2, compactness=0.001, iters=1,
-<<<<<<< HEAD
-		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, selem=None
-		, connectivity=1, mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0,
-		init_level_set_chan=None, init_level_set_morph=None,smoothing=1,
-		threshold='auto', alpha=0.0, balloon=0.0, seed_point=[], 
-		new_value=""):
-=======
-		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, selem=[]
-		, connectivity=1, mu=0.0, lambda1=1.0, lambda2
-		=1.0, dt=0.0, init_level_set=None, smoothing=1, alpha=0.0, balloon
-		=0.0, seed_point=[], new_value=""):
->>>>>>> master
+		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, connectivity=1,
+		mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0, init_level_set_chan=None,
+		init_level_set_morph=None,smoothing=1, threshold='auto', alpha=0.0,
+		balloon=0.0, seed_point=[], new_value=""):
+
 		#img is an ImageData object
 		self.Image = img
 		self.algorithm = algo
-		self.labels = label
 		self.beta = beta
 		self.tolerance = tol
 		self.scale = scale
@@ -41,32 +28,24 @@ class AlgorithmParams(object):
 		self.kernel_size = kernel
 		self.max_dist = max_dist
 		self.seed = random_seed
-		self.selem = selem
 		self.connectivity = connectivity
 		self.mu = mu
 		self.lambda1 = lambda1
 		self.lambda2 = lambda2
 		self.dt = dt
-<<<<<<< HEAD
 		#May want to make seperate level sets for different functions
 			#e.g. Morph_chan_vese vs morph_geo_active_contour
 		self.init_level_set_chan = init_level_set_chan
 		self.init_level_set_morph = init_level_set_morph
 		self.smoothing = smoothing
 		self.threshold=threshold
-=======
-		self.init_level_set = init_level_set
 		self.smoothing = smoothing
->>>>>>> master
 		self.alpha = alpha
 		self.balloon = balloon
-		self.seed_point = [random.randrange(0, dim) for dim in img.getShape()]
+		self.seed_point = seed_point
 		self.new_value = new_value
 
-<<<<<<< HEAD
 
-=======
->>>>>>> master
 	#Accessors
 	def getImage(self): return self.Image
 	def getAlgo(self): return self.algorithm
@@ -83,33 +62,21 @@ class AlgorithmParams(object):
 	def getKernel(self): return self.kernel_size
 	def getMaxDist(self): return self.max_dist
 	def getSeed(self): return self.seed
-<<<<<<< HEAD
-	def getSelem(self): return self.selem
-=======
->>>>>>> master
 	def getConnect(self): return self.connectivity
 	def getMu(self): return self.mu
 	def getLambdaOne(self): return self.lambda1
 	def getLambdaTwo(self): return self.lambda2
 	def getDT(self): return self.dt
-<<<<<<< HEAD
 	def getInitLvlSetChan(self): return self.init_level_set_chan
 	def getInitLvlSetMorph(self): return self.init_level_set_morph
 	def getSmoothing(self): return self.smoothing
 	def getThresh(self): return self.threshold
 	def getAlpha(self): return self.alpha
-=======
-	def getInitLvlSet(self): return self.init_level_set
 	def getSmoothing(self): return self.smoothing
->>>>>>> master
 	def getBalloon(self): return self.balloon
 	def getSeedPoint(self): return self.seed_point
 	def getNewVal(self): return self.new_value
 
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 	#Modifiers
 	def changeImage(self, newImg):
 		self.Image = newImg
@@ -155,7 +122,6 @@ class AlgorithmParams(object):
 		self.lambda2 = lambda2
 	def changeDT(self, dt):
 		self.dt = dt
-<<<<<<< HEAD
 	def changeInitLvlSetChan(self, lvlSet):
 		self.init_level_set_chan = lvlSet
 	def changeInitLvlSetMorph(self, lvlSet):
@@ -166,12 +132,8 @@ class AlgorithmParams(object):
 		self.threshold = threshold
 	def changeAlpha(self, alpha):
 		self.alpha = alpha
-=======
-	def changeInitLvlSet(self, lvlSet):
-		self.init_level_set = lvlSet
 	def changeSmoothing(self, smoothing):
 		self.smoothing = smoothing
->>>>>>> master
 	def changeBalloon(self, balloon):
 		self.balloon = balloon
 	def changeSeedPoint(self, seedPt):
