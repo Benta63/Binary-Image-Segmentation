@@ -1,7 +1,7 @@
 #Lightly Coupled with ImageData class
 #A class with accessors and modifiers for all the parameters used in
 #the skimage algorithms
-import ImageData
+from classes import ImageData
 import random
 class AlgorithmParams(object):
 	

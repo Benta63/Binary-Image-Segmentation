@@ -57,7 +57,7 @@ compactness (float, try logs {e.g. 0.01, 0.1, 1, 10, etc}, 0-infinity) [Used in 
 iterations (int, 1-infinity) [Used in both Morphologicals] optional
 ratio (float, 0-1) [Used in quickshift] optional
 kernel_size(float, 1-infinity) [Used in quickshift] optional
-max_dist (1-infinity) [Used in quickshift] optional
+max_dist (float, 1-infinity) [Used in quickshift] optional
 random_seed (int, 0-infinity) [Used in quickshift] optional
 connectivity in watershed == selem in flood, flood_fill(ndarray, same shape as image using 1s and zeros) [Used in watershed, flood, flood_fill] optional in watershed, mandatory in floods
 connectivity in flood/floodfill (int, 1-infinity) optional

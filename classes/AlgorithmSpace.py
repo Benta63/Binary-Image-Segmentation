@@ -6,13 +6,15 @@ import skimage
 from skimage import segmentation
 from itertools import combinations
 
-import ImageData
-import AlgorithmParams
+from classes import ImageData
+from classes import AlgorithmParams
 
 '''
 This class will run through all the algorithms in skimage.segmentation
 and change the parameters
 '''
+
+#Perhaps inherit from AlgorithmParams?
 class AlgorithmSpace(object):
 	def __init__(self, parameters):
 		#parameters is a AlgorithmParams object
@@ -49,7 +51,7 @@ class AlgorithmSpace(object):
 
 	'''
 	#Code for algorithms == RW
-
+	#Not using RandomWalker because labels complicates the searchspace
 	def runRandomWalker(self):
 		#Let's deterime what mode to use
 		mode = ""
@@ -186,12 +188,13 @@ class AlgorithmSpace(object):
 	compactness -> float, compactness of the basins Higher values make more
 		regularly-shaped basin
 	'''
+	#Not using connectivity or markers params as arrays as they would
+	#expand the search space too much.
 	#Code for algorithm = WS
 
 	def runWaterShed(self):
 		output = skimage.segmentation.watershed(
-			self.params.getImage().getImage(), markers=self.params.getLabel()
-			, connectivity=self.params.getSelem(), 
+			self.params.getImage().getImage(), 
 			compactness=self.params.getCompact())
 		return output
 	'''
