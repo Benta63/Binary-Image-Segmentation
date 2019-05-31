@@ -48,6 +48,8 @@ class AlgorithmSpace(object):
 	spacing -> spacing in between pixels, Going to leave this at 1 fr now
 
 	'''
+	#Code for algorithms == RW
+
 	def runRandomWalker(self):
 		#Let's deterime what mode to use
 		mode = ""
@@ -82,6 +84,8 @@ class AlgorithmSpace(object):
 	pass in lists: scale, sigma, min_size
 
 	'''
+	#Code for algorithm == FB
+
 	def runFelzenszwalb(self):
 
 		output = skimage.segmentation.felzenszwalb(
@@ -122,8 +126,9 @@ class AlgorithmSpace(object):
 		respect to the supposed segment size. 'depth*width*height/n_segments'
 	max_size factor -- proportion of max size connected segment size
 	slic_zero -- bool: run SLIC-zero, the zero parameter mode of SLIC
-
 	'''
+	#Code for algorith == SC
+
 	def runSlic(self):
 		output = skimage.segmentation.slic(self.params.getImage(),
 			n_segments=self.params.getSegments(), compactness=
@@ -151,8 +156,9 @@ class AlgorithmSpace(object):
 		Zero means no smoothing
 	convert2lab -- bool: leave alone
 	random_seed -- int, Random seed used for breacking ties. 
-
 	'''
+	#Code for algorithm == QS
+
 	def runQuickShift(self):
 		output = skimage.segmentation.quickshift(
 			self.params.getImage().getImage(), ratio=self.params.getRatio()
@@ -161,7 +167,6 @@ class AlgorithmSpace(object):
 			random_seed=self.params.getSeed())
 		
 		return output
-
 
 	#Write comments for below later
 
@@ -180,8 +185,9 @@ class AlgorithmSpace(object):
 	mask -> ndarray of bools (or 0s and 1s): 
 	compactness -> float, compactness of the basins Higher values make more
 		regularly-shaped basin
-
 	'''
+	#Code for algorithm = WS
+
 	def runWaterShed(self):
 		output = skimage.segmentation.watershed(
 			self.params.getImage().getImage(), markers=self.params.getLabel()
@@ -221,6 +227,7 @@ class AlgorithmSpace(object):
 	extended_output: bool, If true, adds more returns 
 		(Final level set & energies)
 	'''
+	#Code for Algorithm = CV
 	
 	def runChanVese(self):
 		output = skimage.segmentation.chan_vese(
@@ -228,7 +235,7 @@ class AlgorithmSpace(object):
 				lambda1=self.params.getLambdaOne(), lambda2=
 				self.params.getLambdaTwo(), tol=self.params.getTolerance()
 				, max_iter=self.params.getIters(), dt=self.params.getDT()
-				, init_level_set=self.params.getInitLvlSet())
+				, init_level_set=self.params.getInitLvlSetChan())
 
 		return output
 	'''
@@ -258,10 +265,12 @@ class AlgorithmSpace(object):
 	lambda2: Weight param for inner region. If larger thant lambda1, inner
 		region will have a larger range of values than outer region
 	'''
+	#Code for algorithm = MCV
+
 	def runMorphChanVese(self):
 		output = skimage.segmentation.morphological_chan_vese(
 			self.params.getImage().getImage(), init_level_set=
-			self.params.getInitLvlSet(), smoothing=
+			self.params.getInitLvlSetMorph(), smoothing=
 			self.params.getSmoothing(), lambda1=self.params.getLambdaOne()
 			, lambda2=self.params.getLambdaTwo())
 		return output
@@ -291,9 +300,10 @@ class AlgorithmSpace(object):
 		iteration. Usually 1-4, larger values have smoother segmentation
 	threshold: Areas of image with a smaller value than the threshold
 		are borders
-	balloon: float, guides contour of low-information parts of image, 
-	
+	balloon: float, guides contour of low-information parts of image, 	
 	'''
+	#Code for algorithm = AC
+
 	def runMorphGeodesicActiveCountour(self):
 		#We run the inverse_gaussian_gradient to get the image to use
 		gimage = skimage.segmentation.inverse_gaussian_gradient(
@@ -301,7 +311,7 @@ class AlgorithmSpace(object):
 			self.params.getSigma())
 
 		output = morphological_geodesic_active_contour(gimage,
-			self.params.getIters(), self.params.getInitLvlSet(), smoothing=
+			self.params.getIters(), self.params.getInitLvlSetMorph(), smoothing=
 			self.params.getSmoothing(), threshold=self.params.getThresh(),
 			balloon= self.params.getBalloon())
 
@@ -323,6 +333,7 @@ class AlgorithmSpace(object):
 	tolerance: float or int, If none, adjacent values must be equal to 
 		seed_point. Otherwise, how likely adjacent values are flooded.
 	'''
+	#Code for algorithm = FD
 
 	def runFlood(self):
 		output = skimage.segmentation.flood(self.params.getImage().getImage()
@@ -350,6 +361,7 @@ class AlgorithmSpace(object):
 	inplace: bool, If true, the flood filling is applied to the image,
 		if False, the image is not modified. Default False, don't change
 	'''
+	#Code for algorithm == FF
 
 	def runFloodFill(self):
 		output = skimage.segmentation.flood_fill(

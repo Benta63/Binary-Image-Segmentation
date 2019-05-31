@@ -20,11 +20,3 @@ def FitnessFunction(img1, img2):
 	#Comparing the Mean Squared Error
 	mse = skimage.measure.compare_mse(img1, img2)
 	return ssim + mse
-
-
-
-
-
-			
-
-

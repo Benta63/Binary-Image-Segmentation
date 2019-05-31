@@ -9,8 +9,9 @@ class AlgorithmParams(object):
 		sigma=0.0, min_size=0, n_segments=2, compactness=0.001, iters=1,
 		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, selem=None
 		, connectivity=1, mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0,
-		init_level_set=None, smoothing=1, threshold='auto', alpha=0.0, balloon
-		=0.0, seed_point=[], new_value=""):
+		init_level_set_chan=None, init_level_set_morph=None,smoothing=1,
+		threshold='auto', alpha=0.0, balloon=0.0, seed_point=[], 
+		new_value=""):
 		#img is an ImageData object
 		self.Image = img
 		self.algorithm = algo
@@ -35,7 +36,8 @@ class AlgorithmParams(object):
 		self.dt = dt
 		#May want to make seperate level sets for different functions
 			#e.g. Morph_chan_vese vs morph_geo_active_contour
-		self.init_level_set = init_level_set
+		self.init_level_set_chan = init_level_set_chan
+		self.init_level_set_morph = init_level_set_morph
 		self.smoothing = smoothing
 		self.threshold=threshold
 		self.alpha = alpha
@@ -66,7 +68,8 @@ class AlgorithmParams(object):
 	def getLambdaOne(self): return self.lambda1
 	def getLambdaTwo(self): return self.lambda2
 	def getDT(self): return self.dt
-	def getInitLvlSet(self): return self.init_level_set
+	def getInitLvlSetChan(self): return self.init_level_set_chan
+	def getInitLvlSetMorph(self): return self.init_level_set_morph
 	def getSmoothing(self): return self.smoothing
 	def getThresh(self): return self.threshold
 	def getAlpha(self): return self.alpha
@@ -120,8 +123,10 @@ class AlgorithmParams(object):
 		self.lambda2 = lambda2
 	def changeDT(self, dt):
 		self.dt = dt
-	def changeInitLvlSet(self, lvlSet):
-		self.init_level_set = lvlSet
+	def changeInitLvlSetChan(self, lvlSet):
+		self.init_level_set_chan = lvlSet
+	def changeInitLvlSetMorph(self, lvlSet):
+		self.init_level_set_morph = lvlSet
 	def changeSmoothing(self, smoothing):
 		self.smoothing = smoothing
 	def changeThresh(self, threshold):
