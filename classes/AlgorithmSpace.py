@@ -8,8 +8,8 @@ import skimage
 from skimage import segmentation
 from itertools import combinations
 
-from classes import ImageData
-from classes import AlgorithmParams
+#from . import ImageData
+#from . import AlgorithmParams
 
 '''
 This class will run through all the algorithms in skimage.segmentation
@@ -42,14 +42,14 @@ class AlgorithmSpace(object):
 	data -> Image (ndarray)
 	labels -> Same shape as data, ndarray
 	beta -> float, penalization coefficient High beta = more difficult
-	diffusion. beta will most likely be a list, as different coefficients
+	diffusion. as different coefficients
 	may be better for different images
 	mode -> string. mode is normally bf, but should use cg_mg for images smaller than 512X512
 	tol is the tolerance to achieve when solving a linear system
 	copy should be True. Whether or not to overwrite label array
 	multichannel -- False is gray image, True if multichannel image
 	return_full_prob -> should be false
-	spacing -> spacing in between pixels, Going to leave this at 1 fr now
+	spacing -> spacing in between pixels, Going to leave this at 1 for now
 
 	'''
 	#Code for algorithms == RW
@@ -68,7 +68,7 @@ class AlgorithmSpace(object):
 		
 		output = skimage.segmentation.random_walker(self.params.getImage().getImage()
 			, self.params.getLabel(), beta=self.params.getBeta(), mode=mode,
-			tol=self.params.getTolerance, copy=True, multichannel=self.channel,
+			tol=self.params.getTolerance(), copy=True, multichannel=self.channel,
 			return_full_prob=False) 
 		return output
 
@@ -79,20 +79,11 @@ class AlgorithmSpace(object):
 	The felzenszwalb algorithms computes a graph based on the segmentation
 	Produces an oversegmentation of the multichannel using min-span tree.
 	Returns an integer mask indicating the segment labels
-		channel = False
-		if (self.parameters.getImage.getDim() > 2):
-			#This is at least a 3D array, so multichannel
-			channel = True
-		return skimage.segmentation.random_walker()
-		#for b in beta:
-			#for t in tol:
-			#tol is after mode and before multichannel
-			
-		#	new_labels.append(scimage.segmentation.random_walker(data.getImage(), labels, b, mode, copy=False, multichannel=channel, return_full_prob=True))
-
-		return new_labels
-
-	
+	scale: float, higher meanse larger clusters
+	sigma: float, std. dev of Gaussian kernel for preprocessing
+	min_size: int, minimum component size. For postprocessing
+	mulitchannel: bool, Whether the image is 2D or 3D. 2D images
+		are not supported at all
 
 	#Needs testing to find correct values'
 
@@ -137,7 +128,7 @@ class AlgorithmSpace(object):
 		output = skimage.segmentation.slic(self.params.getImage(),
 			n_segments=self.params.getSegments(), compactness=
 			self.params.getCompact(), max_iter=self.params.getIters(),
-			sigma=self.params.getSigma, multichannel=self.channel)
+			sigma=self.params.getSigma(), multichannel=self.channel)
 
 		return output
 

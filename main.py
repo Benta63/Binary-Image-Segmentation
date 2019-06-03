@@ -12,51 +12,23 @@ from deap import tools
 from skimage import segmentation
 import cv2
 
+
 from classes import ImageData
 from classes import AlgorithmSpace
 from classes.AlgorithmSpace import AlgorithmSpace
 from classes import AlgorithmParams
 
-#The fitness function. Should change a bit
-def evalOneMax(individual):
-	return sum(individual)
+from classes import FileClass
+from classes.FileClass import FileClass
+from classes import GeneticHelp
+from classes.GeneticHelp import GeneticHelp as GA
 
-#Executes a crossover between two numpy arrays of the same length
-def twoPointCopy(np1, np2):
-	assert(len(np1) == len(np2))
-	size = len(np1)
-	point1 = random.randint(1, size)
-	point2 = random.randint(1, size-1)
-	if (point2 >= point1):
-		point2 +=1
-	else: #Swap the two points
-		point1, point2 = point2, point1
-	np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
-	return np1, np2
 
-def writeData(img, newImg, imgName, txtName):
-
-	file = open(txtName, 'w+')
-	for line in img.getImage():
-		for number in line:
-			file.write(str(number) + " ")
-		file.write('\n')
-	file.write(str(img.getImage()))
-	file.close()
-
-	#Saving the image
-	cv2.imwrite(imgName, newImg)	
-
-def check_dir(path):
-	directory = os.path.dirname(path)
-	if not os.path.exists(path):
-		return False
-	return True
 
 if __name__ == '__main__':
 	#Will later have user input to find where the images are
 	ImagePath = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
-	if (check_dir(ImagePath) == False):
+	if (FileClass.check_dir(ImagePath) == False):
 		print ('ERROR: Directory %s Does not exist'%ImagePath)
 
 
@@ -72,7 +44,7 @@ if __name__ == '__main__':
 	tolerance = [float(i)/1000 for i in range(0,1000,1)]
 	scale = [i for i in range(0,10000)]
 	sigma = [float(i)/100 for i in range(0,1000,1)]
-	#Later weight sigmas from 0-1 higher
+	#Sigma should be weighted more from 0-1
 	min_size = [i for i in range(0,10000)]
 	n_segments = [i for i in range(2,10000)]
 	iterations = [1000]
@@ -92,31 +64,101 @@ if __name__ == '__main__':
 	alphas = [i for i in range(0,10000)]
 	#Should weight values -1, 0 and 1 higher
 	balloon = [i for i in range(-1000,1000)]
+	connectivity = [i for i in range(0, 9)]
 	#For flooding, which I will add later
 	#seed_point = 
 	#new_value = 
 
 	#Using the DEAP genetic algorithm to make One Max
+	#https://deap.readthedocs.io/en/master/api/tools.html
 	#Creator factory builds new classes
-	creator.create("FitnessMax", base.Fitness, weight=(1.0,))
-	creator.create("Individual", np.ndarray, fitness=creator.FitnessMax)
+
+	random.seed(134)
+	creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+	creator.create("Individual", list, fitness=creator.FitnessMax)
 	
 	#
 
 	toolbox = base.Toolbox()
 	#Attribute generator
-	toolbox.register("attr_bool", random.randint, 0, 1)
+	toolbox.register("attr_bool", random.randint, 0, 1000)
 	#Structural initializers
-	toolbox.register("individual", tools.initRepeat, AlgorithmParams
-		, toolbox.attr_bool, 100)
-	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual)
-	toolbox.register("mate", twoPointCopy)
-	toolbox.register("evaluate", evalOneMax)
+	
+	toolbox.register("mate", tools.cxTwoPoint)
+	toolbox.register("evaluate", GA.evalOneMax)
 	toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 	toolbox.register("select", tools.selTournament, tournsize=3)
 	
-	generations, mutation, crossover = 2, 0.2, 0.5
+	#deap.tools.init_Cycle(container, seq_func, n)
+	#Container: data type
+	#seq_func: List of function objects to be called in order to fill container
+	#n: number of times to iterate through list of functions
+	#Returns: An instance of the container filled with data returned from functions
+	#Here we register all the parameters to the toolbox
+	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
+	ITER = 1000	
+	SEED = 134
+	SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT = 1, 4, 0.5
+	BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT = -1, 1, 0.5
+
+	toolbox.register("attr_Algo", random.choice, Algos)
+	toolbox.register("attr_Beta", random.choice, betas)
+	toolbox.register("attr_Tol", random.choice, tolerance)
+	toolbox.register("attr_Scale", random.choice, scale)
+	toolbox.register("attr_Sigma", GA.weighted_choice, sigma, SIGMA_MIN, 
+		SIGMA_MAX, SIGMA_WEIGHT)
+	toolbox.register("attr_minSize", random.choice, min_size)
+	toolbox.register("attr_nSegment", random.choice, n_segments)
+	toolbox.register("attr_iterations", int, ITER)
+	toolbox.register("attr_ratio", random.choice, ratio)
+	toolbox.register("attr_kernel", random.choice, kernel)
+	toolbox.register("attr_maxDist", random.choice, max_dists)
+	toolbox.register("attr_seed", int, SEED)
+	toolbox.register("attr_connect", random.choice, connectivity)
+	toolbox.register("attr_compact", random.choice, compactness)
+	toolbox.register("attr_mu", random.choice, mu)
+	toolbox.register("attr_lambda", random.choice, Lambdas)
+	toolbox.register("attr_dt", random.choice, dt)
+	toolbox.register("attr_init_chan", random.choice, init_level_set_chan)
+	toolbox.register("attr_init_morph", random.choice, init_level_set_morph)
+	toolbox.register("attr_smooth", GA.weighted_choice, smoothing, SMOOTH_MIN
+		, SMOOTH_MAX, SMOOTH_WEIGHT)
+	toolbox.register("attr_alphas", random.choice, alphas)
+	toolbox.register("attr_balloon", GA.weighted_choice, balloon, BALLOON_MIN
+		, BALLOON_MAX, BALLOON_WEIGHT)
+
+	#toolbox.register()
+
+	#toolbox.register("attr_Sigma", random.)
+
+	func_seq = [toolbox.attr_Algo, toolbox.attr_Beta, toolbox.attr_Tol,
+		toolbox.attr_Scale, toolbox.attr_Sigma, toolbox.attr_minSize,
+		toolbox.attr_nSegment, toolbox.attr_iterations, toolbox.attr_ratio,
+		toolbox.attr_kernel, toolbox.attr_maxDist, toolbox.attr_seed, 
+		toolbox.attr_connect, toolbox.attr_compact, toolbox.attr_mu, 
+		toolbox.attr_lambda, toolbox.attr_dt, toolbox.attr_init_chan,
+		toolbox.attr_init_morph, toolbox.attr_smooth, toolbox.attr_alphas,
+		toolbox.attr_balloon]
+	toolbox.register("individual", tools.initCycle, creator.Individual
+		, func_seq, n=1)
+
+	toolbox.register("population", tools.initRepeat, list, 
+		toolbox.individual, 300)
+
+	pop = toolbox.individual()
+	pop = toolbox.population()
+	print(pop[0])
+	hof = tools.HallOfFame(1)
+	stats = tools.Statistics(lambda ind: ind.fitness.values)
+	stats.register("avg", np.mean)
+
+	#cxpb = probability of two individuals mating
+	#mutpb = probability of mutation
+	#ngen = Number of generations
+
+	cxpb, mutpb, ngen = 0.2, 0.5, 2
+	#print(algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=40,
+#		stats=stats, halloffame=hof))
 	#toolbox.population()
 	#hof = tools.HallOfFame(1, similar=np.allclose)
  	
