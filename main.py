@@ -24,26 +24,31 @@ from classes import GeneticHelp
 from classes.GeneticHelp import GeneticHelp as GA
 
 
-
 if __name__ == '__main__':
 	#Will later have user input to find where the images are
 	ImagePath = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 	if (FileClass.check_dir(ImagePath) == False):
-		print ('ERROR: Directory %s Does not exist'%ImagePath)
+		print ('ERROR: Directory %s does not exist'%ImagePath)
 
+	ValidationPath = 'Image_data\\Coco_2017_unlabeled\\rgbd_label'
+	if(FileClass.check_dir(ImagePath) == False):
+		print("ERROR: Directory %s does not exist"%ValidationPath)
 
-	#Making an ImageData object for all of the images
+	#Making an ImageData object for all of the regular images
 	AllImages = [ImageData.ImageData(os.path.join(root, name)) for 
 		root, dirs, files in os.walk(ImagePath) for name in files]
 
-	#AllLabels = [np.zeros(img.getShape()) for img in AllImages]
+	#Making an ImageData object for all of the labeled images
+	ValImages = [ImageData.ImageData(os.path.join(root, name)) for
+		root, dirs, files in os.walk(ValidationPath) for name in
+		files]
 
 	#Let's get all possible values in lists
 	Algos = ['FB','SC','QS','WS','CV','MCV','AC'] #Need to add floods
 	betas = [i for i in range(0,10000)]
 	tolerance = [float(i)/1000 for i in range(0,1000,1)]
 	scale = [i for i in range(0,10000)]
-	sigma = [float(i)/100 for i in range(0,1000,1)]
+	sigma = [float(i)/100 for i in range(0,10,1)]
 	#Sigma should be weighted more from 0-1
 	min_size = [i for i in range(0,10000)]
 	n_segments = [i for i in range(2,10000)]
@@ -60,10 +65,10 @@ if __name__ == '__main__':
 	init_level_set_chan = ['checkerboard', 'disk', 'small disk']
 	init_level_set_morph = ['checkerboard', 'circle']
 	#Should weight 1-4 higher
-	smoothing = [i for i in range(1,100)]
+	smoothing = [i for i in range(1, 10)]
 	alphas = [i for i in range(0,10000)]
 	#Should weight values -1, 0 and 1 higher
-	balloon = [i for i in range(-1000,1000)]
+	balloon = [i for i in range(-50,50)]
 	connectivity = [i for i in range(0, 9)]
 	#For flooding, which I will add later
 	#seed_point = 
@@ -73,7 +78,7 @@ if __name__ == '__main__':
 	#https://deap.readthedocs.io/en/master/api/tools.html
 	#Creator factory builds new classes
 
-	random.seed(134)
+	#random.seed(34)
 	creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 	creator.create("Individual", list, fitness=creator.FitnessMax)
 	
@@ -96,10 +101,10 @@ if __name__ == '__main__':
 	#Returns: An instance of the container filled with data returned from functions
 	#Here we register all the parameters to the toolbox
 	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
-	ITER = 1000	
+	ITER = 10
 	SEED = 134
 	SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT = 1, 4, 0.5
-	BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT = -1, 1, 0.5
+	BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT = -1, 1, 0.9
 
 	toolbox.register("attr_Algo", random.choice, Algos)
 	toolbox.register("attr_Beta", random.choice, betas)
@@ -133,9 +138,10 @@ if __name__ == '__main__':
 
 	func_seq = [toolbox.attr_Algo, toolbox.attr_Beta, toolbox.attr_Tol,
 		toolbox.attr_Scale, toolbox.attr_Sigma, toolbox.attr_minSize,
-		toolbox.attr_nSegment, toolbox.attr_iterations, toolbox.attr_ratio,
+		toolbox.attr_nSegment, toolbox.attr_compact, toolbox.attr_iterations, 
+		toolbox.attr_ratio,
 		toolbox.attr_kernel, toolbox.attr_maxDist, toolbox.attr_seed, 
-		toolbox.attr_connect, toolbox.attr_compact, toolbox.attr_mu, 
+		toolbox.attr_connect, toolbox.attr_mu, 
 		toolbox.attr_lambda, toolbox.attr_dt, toolbox.attr_init_chan,
 		toolbox.attr_init_morph, toolbox.attr_smooth, toolbox.attr_alphas,
 		toolbox.attr_balloon]
@@ -148,6 +154,7 @@ if __name__ == '__main__':
 	pop = toolbox.individual()
 	pop = toolbox.population()
 	print(pop[0])
+	print(GA.runAlgo(AllImages[0], ValImages[0], pop[0]))
 	hof = tools.HallOfFame(1)
 	stats = tools.Statistics(lambda ind: ind.fitness.values)
 	stats.register("avg", np.mean)

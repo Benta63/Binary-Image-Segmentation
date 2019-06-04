@@ -24,7 +24,7 @@ class AlgorithmSpace(object):
 		self.params = parameters
 		#Whether this is a multichannel array or grayscale
 		self.channel = False
-		if (self.params.getImage().getType() > 2):
+		if (self.params.getImage().getDim() > 2):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
 	
@@ -300,16 +300,18 @@ class AlgorithmSpace(object):
 	'''
 	#Code for algorithm = AC
 
-	def runMorphGeodesicActiveCountour(self):
+	def runMorphGeodesicActiveContour(self):
 		#We run the inverse_gaussian_gradient to get the image to use
 		gimage = skimage.segmentation.inverse_gaussian_gradient(
 			self.params.getImage().getImage(), self.params.getAlpha(), 
 			self.params.getSigma())
-
-		output = morphological_geodesic_active_contour(gimage,
-			self.params.getIters(), self.params.getInitLvlSetMorph(), smoothing=
-			self.params.getSmoothing(), threshold=self.params.getThresh(),
-			balloon= self.params.getBalloon())
+		print("gimage")
+		output = skimage.segmentation.morphological_geodesic_active_contour(
+			gimage, self.params.getIters(), self.params.getInitLvlSetMorph(),
+			smoothing= self.params.getSmoothing(), 
+			threshold=self.params.getThresh(), balloon= 
+			self.params.getBalloon())
+		print("outputting")
 
 		return output
 	'''

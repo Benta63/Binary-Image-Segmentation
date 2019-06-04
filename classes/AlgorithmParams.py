@@ -7,7 +7,7 @@ import random
 class AlgorithmParams(object):
 	
 	def __init__(self, img, algo="", beta=0.0, tol=0.0, scale=0.0,
-		sigma=0.0, min_size=0, n_segments=2, compactness=0.001, iters=1,
+		sigma=0.1, min_size=0, n_segments=2, compactness=0.001, iters=1,
 		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, connectivity=1,
 		mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0, init_level_set_chan=None,
 		init_level_set_morph=None,smoothing=1, threshold='auto', alpha=0.0,
@@ -49,7 +49,6 @@ class AlgorithmParams(object):
 	#Accessors
 	def getImage(self): return self.Image
 	def getAlgo(self): return self.algorithm
-	def getLabel(self): return self.labels
 	def getBeta(self): return self.beta
 	def getTolerance(self): return self.tolerance
 	def getScale(self): return self.scale
@@ -85,8 +84,6 @@ class AlgorithmParams(object):
 			self.seed_point = [random.randrange(0, dim) for dim in newImg.getShape()]
 	def changeAlgo(self, algo):
 		self.algorithm = algo
-	def changeLabel(self, label):
-		self.label = label
 	def changeBeta(self, beta):
 		self.beta = beta
 	def changeTolerance(self, tol):
