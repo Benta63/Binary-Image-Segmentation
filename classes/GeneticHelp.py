@@ -3,6 +3,7 @@ import numpy as np
 import skimage.measure
 from . import AlgorithmParams
 from . import AlgorithmSpace
+import cv2
 class GeneticHelp(object):
 	
 	#Returns a number from a list with certain values being weighted
@@ -70,14 +71,17 @@ class GeneticHelp(object):
 	'''
 	def FitnessFunction(img1, img2, imgDim):
 		
-		assert(img1.shape == img2.shape)
+		assert(len(img1.shape) == len(img2.shape))
+		assert(type(img1) == type(img2))
 		channel = False
 		if imgDim > 2: channel = True
 		#Comparing the Structual Similarity Index (SSIM) of two images
 		ssim = skimage.measure.compare_ssim(img1, img2, multichannel=channel)
 		#Comparing the Mean Squared Error
-		mse = skimage.measure.compare_mse(img1, img2)
-		return ssim + mse
+		mse = skimage.measure.compare_nrmse(img1, img2)
+		
+
+		return mse
 
 	#Runs an imaging algorithm given the parameters from the population
 	def runAlgo(img, valImg, individual):
@@ -106,7 +110,6 @@ class GeneticHelp(object):
 		#Some algorithms can't be used on grayscale images
 		GrayAlgos = {
 			'RW': Algo.runRandomWalker,
-			'SC': Algo.runSlic,
 			'WS': Algo.runWaterShed,
 			'CV': Algo.runChanVese,
 			'MCV': Algo.runMorphChanVese,
@@ -124,13 +127,29 @@ class GeneticHelp(object):
 			'AC': Algo.runMorphGeodesicActiveContour,
 			'FF': Algo.runFloodFill
 		}
+		#Some algorithms return masks as opposed to the full images
+		Masks = ['FB', 'SC', 'QS']
+		#Some algorithms return boolean arrays
+		BoolArrs = ['CV','FD']
+		#The functions in Masks and BoolArrs will need to pass through
+		#More functions before they are ready for the fitness function
 
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
 		#If the algorithm is not right for the image, return an
 		#obscenly large number
-		if (params.getAlgo() not in switcher): return 999999999999999
+		if (params.getAlgo() not in switcher): return 1
 		func = switcher.get(params.getAlgo(), "Invalid Code")
-		idea = func()
-		return GeneticHelp.FitnessFunction(img.getImage(), 
-			valImg.getImage(), img.getDim())
+		newImg = func()
+		runAlg = AlgorithmSpace.AlgorithmSpace(params)
+		img = runAlg.runAlgo()
+		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
+			img = runAlg.runMarkBoundaries(img)
+
+		print(params.getAlgo())
+		print ("Shapes", len(img.shape), valImg.getDim())
+
+		cv2.imwrite("test.png", img)
+
+		return (GeneticHelp.FitnessFunction(img, 
+			valImg.getImage(), len(img.shape)))

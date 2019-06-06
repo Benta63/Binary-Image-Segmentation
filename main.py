@@ -79,7 +79,12 @@ if __name__ == '__main__':
 	#Creator factory builds new classes
 
 	#random.seed(34)
-	creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+
+	#Need to read up on base.Fitness function
+	####### 
+	creator.create("FitnessMax", base.Fitness, weights=(100,))
+	######
+
 	creator.create("Individual", list, fitness=creator.FitnessMax)
 	
 	#
@@ -90,7 +95,7 @@ if __name__ == '__main__':
 	#Structural initializers
 	
 	toolbox.register("mate", tools.cxTwoPoint)
-	toolbox.register("evaluate", GA.evalOneMax)
+	toolbox.register("evaluate", GA.runAlgo)
 	toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 	toolbox.register("select", tools.selTournament, tournsize=3)
 	
@@ -145,6 +150,7 @@ if __name__ == '__main__':
 		toolbox.attr_lambda, toolbox.attr_dt, toolbox.attr_init_chan,
 		toolbox.attr_init_morph, toolbox.attr_smooth, toolbox.attr_alphas,
 		toolbox.attr_balloon]
+	#Here we populate our individual with all of the 
 	toolbox.register("individual", tools.initCycle, creator.Individual
 		, func_seq, n=1)
 
@@ -152,9 +158,17 @@ if __name__ == '__main__':
 		toolbox.individual, 300)
 
 	pop = toolbox.individual()
-	pop = toolbox.population()
-	print(pop[0])
-	print(GA.runAlgo(AllImages[0], ValImages[0], pop[0]))
+	#pop = toolbox.population()
+	print (pop.fitness.valid)
+	pop.fitness.values = GA.runAlgo(AllImages[0], ValImages[0], pop)
+	AlgoParams = AlgorithmParams.AlgorithmParams(pop)
+	print (type(AlgoParams).__name__)
+	Algo = AlgorithmSpace(AlgoParams)
+
+
+	print (pop.fitness.valid)
+	print (pop.fitness)
+	#fitness = GA.runAlgo(AllImages[0], ValImages[0], pop[0])
 	hof = tools.HallOfFame(1)
 	stats = tools.Statistics(lambda ind: ind.fitness.values)
 	stats.register("avg", np.mean)

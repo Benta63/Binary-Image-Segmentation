@@ -20,7 +20,7 @@ and change the parameters
 class AlgorithmSpace(object):
 	def __init__(self, parameters):
 		#parameters is a AlgorithmParams object
-
+		assert(type(parameters).__name__ == "AlgorithmParams")
 		self.params = parameters
 		#Whether this is a multichannel array or grayscale
 		self.channel = False
@@ -125,7 +125,8 @@ class AlgorithmSpace(object):
 	#Code for algorithm == SC
 	'''
 	def runSlic(self):
-		output = skimage.segmentation.slic(self.params.getImage(),
+		output = skimage.segmentation.slic(
+			self.params.getImage().getImage(),
 			n_segments=self.params.getSegments(), compactness=
 			self.params.getCompact(), max_iter=self.params.getIters(),
 			sigma=self.params.getSigma(), multichannel=self.channel)
@@ -369,3 +370,47 @@ class AlgorithmSpace(object):
 			self.params.getTolerance())
 
 		return output
+
+	'''
+	#mark_boundaries
+	https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.mark_boundaries	
+	Some functions return masks of data, but not the actual images. This will apply that mask to the data
+	#Returns a marked array which corresponds to the labels
+	#Variables
+	image: 3D array, grayscale or RGB image
+	label_img: 2D array, regions are different integer values
+	color: RGB color sequence (length-3), optional
+	outline_color: RGB color sequence (length-3), optional
+	mode: string in {thick, inner, outer, subpixel} to define boundaries, optional
+	background_label: int, which label to consider background, optional
+		Only useful in inner and outer mode
+	'''
+	#Code for algorithm == MB
+	#Probably want to pass in color
+	'''This is not an image segmentation algorithm on its own. It requires
+		another algorithm to create a mask first
+	'''
+	#Uses Felzenszwalb, slic, 
+	def runMarkBoundaries(self, mask):
+		output = skimage.segmentation.mark_boundaries(
+			self.params.getImage().getImage(), mask)
+		return output
+.
+
+	#Runs the algorithm specified in params
+	def runAlgo(self):
+		switcher = {
+			'RW': self.runRandomWalker,
+			'FB': self.runFelzenszwalb,
+			'SC': self.runSlic,
+			'QS': self.runQuickShift,
+			'WS': self.runWaterShed,
+			'CV': self.runChanVese,
+			'MCV': self.runMorphChanVese,
+			'AC': self.runMorphGeodesicActiveContour,
+			'FD': self.runFlood,
+			'FF': self.runFloodFill
+		}
+		func = switcher.get(self.params.getAlgo(), "Invalid code")
+		print(func())
+		return func()
