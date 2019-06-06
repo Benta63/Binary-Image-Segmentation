@@ -13,3 +13,11 @@ Image segmentation is usually a time-consuming process. Usually, a researcher ne
 * random
 * math
 * copy
+
+## Todo
+* Go through labeled leaf images to change to one color for
+  * This project is on binary image segmentation, thus the validation images should only be two colors.
+* Refer to Deap's Basic.fitness
+  * https://deap.readthedocs.io/en/master/api/base.html#deap.base.Fitness
+  * Need to correct creator.create("Fitness***", base.fitness, ????)
+  
