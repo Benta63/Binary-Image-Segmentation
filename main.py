@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
 	#Need to read up on base.Fitness function
 	####### 
-	creator.create("FitnessMax", base.Fitness, weights=(100,))
+	creator.create("FitnessMax", base.Fitness, weights=(0.0,))
 	######
 
 	creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 	toolbox.register("attr_alphas", random.choice, alphas)
 	toolbox.register("attr_balloon", GA.weighted_choice, balloon, BALLOON_MIN
 		, BALLOON_MAX, BALLOON_WEIGHT)
-
+#	toolbox.register("GetImage", AllImages[0])
 	#toolbox.register()
 
 	#toolbox.register("attr_Sigma", random.)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 	pop.fitness.values = GA.runAlgo(AllImages[0], ValImages[0], pop)
 	AlgoParams = AlgorithmParams.AlgorithmParams(pop)
 	print (type(AlgoParams).__name__)
-	Algo = AlgorithmSpace(AlgoParams)
+	#Algo = AlgorithmSpace(AlgoParams)
 
 
 	print (pop.fitness.valid)

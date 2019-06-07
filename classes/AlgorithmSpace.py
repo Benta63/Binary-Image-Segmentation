@@ -395,7 +395,7 @@ class AlgorithmSpace(object):
 		output = skimage.segmentation.mark_boundaries(
 			self.params.getImage().getImage(), mask)
 		return output
-.
+
 
 	#Runs the algorithm specified in params
 	def runAlgo(self):

@@ -81,7 +81,7 @@ class GeneticHelp(object):
 		mse = skimage.measure.compare_nrmse(img1, img2)
 		
 
-		return mse
+		return [mse,]
 
 	#Runs an imaging algorithm given the parameters from the population
 	def runAlgo(img, valImg, individual):
@@ -138,7 +138,7 @@ class GeneticHelp(object):
 		if (img.getDim() > 2): switcher = RGBAlgos
 		#If the algorithm is not right for the image, return an
 		#obscenly large number
-		if (params.getAlgo() not in switcher): return 1
+		if (params.getAlgo() not in switcher): return [1000,]
 		func = switcher.get(params.getAlgo(), "Invalid Code")
 		newImg = func()
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
