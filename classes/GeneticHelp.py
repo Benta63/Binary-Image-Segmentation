@@ -71,16 +71,17 @@ class GeneticHelp(object):
 	'''
 	def FitnessFunction(img1, img2, imgDim):
 		
-		assert(len(img1.shape) == len(img2.shape))
-		assert(type(img1) == type(img2))
+		#assert(len(img1.shape) == len(img2.shape))
+		#assert(type(img1) == type(img2))
 		channel = False
 		if imgDim > 2: channel = True
 		#Comparing the Structual Similarity Index (SSIM) of two images
-		ssim = skimage.measure.compare_ssim(img1, img2, multichannel=channel)
+		#ssim = skimage.measure.compare_ssim(img1, img2, multichannel=channel)
 		#Comparing the Mean Squared Error
+		
 		mse = skimage.measure.compare_nrmse(img1, img2)
 		
-
+		
 		return [mse,]
 
 	#Runs an imaging algorithm given the parameters from the population
@@ -124,7 +125,8 @@ class GeneticHelp(object):
 			'SC': Algo.runSlic,
 			'QS': Algo.runQuickShift,
 			'WS': Algo.runWaterShed,
-			'AC': Algo.runMorphGeodesicActiveContour,
+			#HAVING SOME TROUBLE WITH AC. NEED TO FIX
+			#'AC': Algo.runMorphGeodesicActiveContour,
 			'FF': Algo.runFloodFill
 		}
 		#Some algorithms return masks as opposed to the full images
@@ -133,11 +135,11 @@ class GeneticHelp(object):
 		BoolArrs = ['CV','FD']
 		#The functions in Masks and BoolArrs will need to pass through
 		#More functions before they are ready for the fitness function
-
+		
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
 		#If the algorithm is not right for the image, return an
-		#obscenly large number
+		#very large number
 		if (params.getAlgo() not in switcher): return [1000,]
 		func = switcher.get(params.getAlgo(), "Invalid Code")
 		newImg = func()
@@ -147,9 +149,13 @@ class GeneticHelp(object):
 			img = runAlg.runMarkBoundaries(img)
 
 		print(params.getAlgo())
-		print ("Shapes", len(img.shape), valImg.getDim())
-
-		cv2.imwrite("test.png", img)
-
-		return (GeneticHelp.FitnessFunction(img, 
-			valImg.getImage(), len(img.shape)))
+		#print ("Shapes", len(img.shape), valImg.getDim())
+		if params.getAlgo() == 'AC':
+			print ("Meep")
+			print(img.shape, valImg.getImage().shape)
+		#cv2.imwrite("test.png", img)
+		#print ("End genetic")
+		evaluate = GeneticHelp.FitnessFunction(img, 
+			valImg.getImage(), len(img.shape))
+		
+		return (evaluate)

@@ -82,10 +82,10 @@ if __name__ == '__main__':
 
 	#Need to read up on base.Fitness function
 	####### 
-	creator.create("FitnessMax", base.Fitness, weights=(0.0,))
+	creator.create("FitnessMin", base.Fitness, weights=(0.000000000000000001,))
 	######
 
-	creator.create("Individual", list, fitness=creator.FitnessMax)
+	creator.create("Individual", list, fitness=creator.FitnessMin)
 	
 	#
 
@@ -155,19 +155,21 @@ if __name__ == '__main__':
 		, func_seq, n=1)
 
 	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual, 300)
+		toolbox.individual, 2)
 
-	pop = toolbox.individual()
+	pop = toolbox.population()
 	#pop = toolbox.population()
-	print (pop.fitness.valid)
-	pop.fitness.values = GA.runAlgo(AllImages[0], ValImages[0], pop)
+
+	fitnesses = [GA.runAlgo(AllImages[0], ValImages[0], indi) for indi in pop]
 	AlgoParams = AlgorithmParams.AlgorithmParams(pop)
 	print (type(AlgoParams).__name__)
+	for ind in fitnesses:
+		print (ind)
 	#Algo = AlgorithmSpace(AlgoParams)
 
 
-	print (pop.fitness.valid)
-	print (pop.fitness)
+	#print (pop.fitness.valid)
+	#print (pop.fitness)
 	#fitness = GA.runAlgo(AllImages[0], ValImages[0], pop[0])
 	hof = tools.HallOfFame(1)
 	stats = tools.Statistics(lambda ind: ind.fitness.values)
