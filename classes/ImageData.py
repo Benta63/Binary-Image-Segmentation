@@ -3,8 +3,6 @@ import numpy as np
 import cv2
 import copy
 
-
-
 class ImageData(object):
 
 	def __init__(self, imagePath):
