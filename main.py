@@ -24,6 +24,8 @@ from classes import FileClass
 from classes.FileClass import FileClass
 from classes import GeneticHelp
 from classes.GeneticHelp import GeneticHelp as GA
+from classes import Mutate
+from classes.Mutate import Mutate
 
 
 
@@ -62,7 +64,9 @@ if __name__ == '__main__':
 	ratio = [float(i)/100 for i in range(0,100)]
 	kernel = [i for i in range(0,10000)]
 	max_dists = [i for i in range(0,10000)]
-	random_seed = 134
+	random_seed = [134]
+	connectivity = [i for i in range(0, 9)]
+
 	compactness = [0.0001,0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
 	mu = [float(i)/100 for i in range(0,100)]
 	#The values for Lambda1 and Lambda2 respectively
@@ -75,10 +79,14 @@ if __name__ == '__main__':
 	alphas = [i for i in range(0,10000)]
 	#Should weight values -1, 0 and 1 higher
 	balloon = [i for i in range(-50,50)]
-	connectivity = [i for i in range(0, 9)]
 	#For flooding, which I will add later
 	#seed_point = 
 	#new_value = 
+	AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
+			  n_segments, iterations, ratio, kernel, max_dists,
+			  random_seed, connectivity, compactness, mu, Lambdas, dt,
+			  init_leve_set_chan, init_level_set_morph, smoothing,
+			  alphas, balloon]
 
 	#Using the DEAP genetic algorithm to make One Max
 	#https://deap.readthedocs.io/en/master/api/tools.html
@@ -88,7 +96,7 @@ if __name__ == '__main__':
 
 	#Need to read up on base.Fitness function
 	####### 
-	creator.create("FitnessMin", base.Fitness, weights=(-0.999999999999,))
+	creator.create("FitnessMin", base.Fitness, weights=(0.001,))
 	######
 
 	creator.create("Individual", list, fitness=creator.FitnessMin)
@@ -104,7 +112,7 @@ if __name__ == '__main__':
 	toolbox.register("evaluate", GA.runAlgo)
 	#I will have to create my own mutation function as not all of the values
 	#are the same
-	#toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+	toolbox.register("mutate", Mutate.run)
 	toolbox.register("select", tools.selTournament, tournsize=3)
 	
 	#deap.tools.init_Cycle(container, seq_func, n)
@@ -163,7 +171,7 @@ if __name__ == '__main__':
 		, func_seq, n=1)
 
 	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual, 2)
+		toolbox.individual, 100)
 
 
 	pop = toolbox.population()
@@ -195,7 +203,7 @@ if __name__ == '__main__':
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = 0.2, 0.5, 2
+	cxpb, mutpb, ngen = 0.2, 0.5, 100
 	gen = 0
 
 	leng = len(pop)
@@ -223,9 +231,10 @@ if __name__ == '__main__':
 		
 		#mutation
 		#Right now we don't have a working mutation function
-		# for mutant in offspring:
-		# 	if random.random() < mutpb:
-		# 		toolbox.mutate(mutant)
+		#for mutant in offspring:
+		 #	if random.random() < mutpb:
+		#		toolbox.mutate(AllVals, )	
+		#toolbox.mutate(mutant)
 		# 		del mutant.fitness.values
 
 		#Let's just evaluate the mutated and crossover individuals
@@ -255,7 +264,6 @@ if __name__ == '__main__':
 	#We ran the population 'n' times. Let's see how we did:
 
 	best = min(pop, key=attrgetter("fitness"))
-	print(best[15][0], best[15][1])
 	#And let's run the algorithm to get an image
 	Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], best[0],
 			best[1], best[2], best[3], best[4],
