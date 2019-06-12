@@ -231,12 +231,10 @@ if __name__ == '__main__':
 		
 		#mutation
 		#Right now we don't have a working mutation function
-		#for mutant in offspring:
-		 #	if random.random() < mutpb:
-		#		toolbox.mutate(AllVals, )	
-		#toolbox.mutate(mutant)
-		# 		del mutant.fitness.values
-
+		for mutant in offspring:
+			if random.random() < mutpb:
+				toolbox.mutate(mutant, AllVals, 0.05)
+				del mutant.fitness.values	
 		#Let's just evaluate the mutated and crossover individuals
 		invalInd = [ind for ind in offspring if not ind.fitness.valid]
 		NewImage = [AllImages[0] for i in range(0, len(invalInd))]

@@ -66,6 +66,19 @@ class GeneticHelp(object):
 		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
 		return np1, np2
 
+	#TUL THIS OUT MORE
+	def mutate(child, posVals, flipProb = 0.05):
+		#Just because we chose to mutate a value doesn't mean we mutate
+		#Every aspect of the value	
+		for index in range(0, len(child)):
+			randVal = random.random()
+			if randVal < flipProb:
+				#Then we mutate said value
+				child[index] = random.choice(posVals[index])
+		
+
+
+
 	'''Takes in two ImageData obects and compares them according to
 	skimage's Structual Similarity Index and the mean squared error
 	'''
