@@ -91,10 +91,12 @@ class GeneticHelp(object):
 			individual[5], individual[6], individual[7], individual[8],
 			individual[9], individual[10], individual[11], individual[12]
 			, individual[13], individual[14], individual[15][0],
-			individual[1], individual[16], individual[17], individual[18]
+			individual[15][1], individual[16], individual[17], individual[18]
 			, individual[19], 'auto', individual[20], individual[21])
 
 		Algo = AlgorithmSpace.AlgorithmSpace(params)
+		print(params.getAlgo())
+
 		#Python's version of a switch-case
 		AllAlgos = {
 			'RW': Algo.runRandomWalker,
@@ -125,7 +127,7 @@ class GeneticHelp(object):
 			'SC': Algo.runSlic,
 			'QS': Algo.runQuickShift,
 			'WS': Algo.runWaterShed,
-			#HAVING SOME TROUBLE WITH AC. NEED TO FIX
+			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
 			#'AC': Algo.runMorphGeodesicActiveContour,
 			'FF': Algo.runFloodFill
 		}
@@ -141,21 +143,26 @@ class GeneticHelp(object):
 		#If the algorithm is not right for the image, return an
 		#very large number
 		if (params.getAlgo() not in switcher): return [1000,]
+		print("in switcher")
 		func = switcher.get(params.getAlgo(), "Invalid Code")
 		newImg = func()
+		print("Before algo")
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
+
+		print("after algo")
+
 		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
 			img = runAlg.runMarkBoundaries(img)
 
-		print(params.getAlgo())
 		#print ("Shapes", len(img.shape), valImg.getDim())
-		if params.getAlgo() == 'AC':
-			print ("Meep")
-			print(img.shape, valImg.getImage().shape)
+		# if params.getAlgo() == 'AC':
+		# 	print ("Meep")
+		# 	print(img.shape, valImg.getImage().shape)
 		#cv2.imwrite("test.png", img)
 		#print ("End genetic")
 		evaluate = GeneticHelp.FitnessFunction(img, 
 			valImg.getImage(), len(img.shape))
+		print("evaluated")
 		
 		return (evaluate)

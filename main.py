@@ -3,6 +3,8 @@ import os
 from PIL import Image
 import skimage
 import random
+from operator import attrgetter
+import sys
 
 #https://github.com/DEAP/deap
 from deap import algorithms
@@ -24,15 +26,19 @@ from classes import GeneticHelp
 from classes.GeneticHelp import GeneticHelp as GA
 
 
+
+
 if __name__ == '__main__':
 	#Will later have user input to find where the images are
 	ImagePath = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 	if (FileClass.check_dir(ImagePath) == False):
 		print ('ERROR: Directory %s does not exist'%ImagePath)
+		sys.exit(1)
 
 	ValidationPath = 'Image_data\\Coco_2017_unlabeled\\rgbd_label'
 	if(FileClass.check_dir(ImagePath) == False):
 		print("ERROR: Directory %s does not exist"%ValidationPath)
+		sys.exit(1)
 
 	#Making an ImageData object for all of the regular images
 	AllImages = [ImageData.ImageData(os.path.join(root, name)) for 
@@ -82,7 +88,7 @@ if __name__ == '__main__':
 
 	#Need to read up on base.Fitness function
 	####### 
-	creator.create("FitnessMin", base.Fitness, weights=(0.000000000000000001,))
+	creator.create("FitnessMin", base.Fitness, weights=(-0.999999999999,))
 	######
 
 	creator.create("Individual", list, fitness=creator.FitnessMin)
@@ -96,7 +102,9 @@ if __name__ == '__main__':
 	
 	toolbox.register("mate", tools.cxTwoPoint)
 	toolbox.register("evaluate", GA.runAlgo)
-	toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+	#I will have to create my own mutation function as not all of the values
+	#are the same
+	#toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 	toolbox.register("select", tools.selTournament, tournsize=3)
 	
 	#deap.tools.init_Cycle(container, seq_func, n)
@@ -157,15 +165,23 @@ if __name__ == '__main__':
 	toolbox.register("population", tools.initRepeat, list, 
 		toolbox.individual, 2)
 
-	pop = toolbox.population()
-	#pop = toolbox.population()
 
-	fitnesses = [GA.runAlgo(AllImages[0], ValImages[0], indi) for indi in pop]
-	AlgoParams = AlgorithmParams.AlgorithmParams(pop)
-	print (type(AlgoParams).__name__)
-	for ind in fitnesses:
-		print (ind)
+	pop = toolbox.population()
+	
+	#print(AlgoParams.getAlgo())
+	#Space = AlgorithmSpace(AlgoParams)
+	#sys.exit(0)
+	#pop = toolbox.population()
+	Images = [AllImages[0] for i in range(0, len(pop))]
+	ValImages = [ValImages[0] for i in range(0, len(pop))]
+	fitnesses = list(map(toolbox.evaluate, AllImages, ValImages, pop))
+
+	
+	for ind, fit in zip(pop, fitnesses):
+		ind.fitness.values = fit
 	#Algo = AlgorithmSpace(AlgoParams)
+	extractFits = [ind.fitness.values[0] for ind in pop]
+
 
 
 	#print (pop.fitness.valid)
@@ -180,6 +196,79 @@ if __name__ == '__main__':
 	#ngen = Number of generations
 
 	cxpb, mutpb, ngen = 0.2, 0.5, 2
+	gen = 0
+
+	leng = len(pop)
+	mean = sum(extractFits) / leng
+	sum1 = sum(i*i for i in extractFits)
+	stdev = abs(sum1 / leng - mean **2) ** 0.5
+	print(" Min: ", min(extractFits))
+	print(" Max: ", max(extractFits))
+	print(" Avg: ", mean)
+	print(" Std ", stdev)
+	#Beginning evolution
+	while min(extractFits) > 0 and gen < ngen:
+		gen += 1
+		print ("Generation: ", gen)
+		offspring = toolbox.select(pop, len(pop))
+		offspring = list(map(toolbox.clone, offspring))
+
+		#crossover
+		for child1, child2 in zip(offspring[::2], offspring[1::2]):
+			#Do we crossover?
+			if random.random() < cxpb:
+				toolbox.mate(child1, child2)
+				del child1.fitness.values
+				del child2.fitness.values
+		
+		#mutation
+		#Right now we don't have a working mutation function
+		# for mutant in offspring:
+		# 	if random.random() < mutpb:
+		# 		toolbox.mutate(mutant)
+		# 		del mutant.fitness.values
+
+		#Let's just evaluate the mutated and crossover individuals
+		invalInd = [ind for ind in offspring if not ind.fitness.valid]
+		NewImage = [AllImages[0] for i in range(0, len(invalInd))]
+		NewVal = [ValImages[0] for i in range(0, len(invalInd))]
+		fitnesses = map(toolbox.evaluate, NewImage, NewVal, invalInd)
+		for ind, fit in zip(invalInd, fitnesses):
+			ind.fitness.values = fit
+
+		#Replacing the old population
+		pop[:] = offspring
+
+		extractFits = [ind.fitness.values[0] for ind in pop]
+		#Evaluating the new population
+		leng = len(pop)
+		mean = sum(extractFits) / leng
+		sum1 = sum(i*i for i in extractFits)
+		stdev = abs(sum1 / leng - mean **2) ** 0.5
+		print(" Min: ", min(extractFits))
+		print(" Max: ", max(extractFits))
+		print(" Avg: ", mean)
+		print(" Std ", stdev)
+
+
+
+	#We ran the population 'n' times. Let's see how we did:
+
+	best = min(pop, key=attrgetter("fitness"))
+	print(best[15][0], best[15][1])
+	#And let's run the algorithm to get an image
+	Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], best[0],
+			best[1], best[2], best[3], best[4],
+			best[5], best[6], best[7], best[8],
+			best[9], best[10], best[11], best[12]
+			, best[13], best[14], best[15][0],
+			best[15][1], best[16], best[17], best[18]
+			, best[19], 'auto', best[20], best[21])
+	)
+
+	img = Space.runAlgo()
+	cv2.imwrite("dummy.png", img)
+
 	#print(algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=40,
 #		stats=stats, halloffame=hof))
 	#toolbox.population()

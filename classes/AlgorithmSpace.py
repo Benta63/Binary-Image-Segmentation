@@ -24,6 +24,7 @@ class AlgorithmSpace(object):
 		self.params = parameters
 		#Whether this is a multichannel array or grayscale
 		self.channel = False
+		print(type(self.params.getImage()))
 		if (self.params.getImage().getDim() > 2):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
@@ -266,8 +267,8 @@ class AlgorithmSpace(object):
 
 	def runMorphChanVese(self):
 		output = skimage.segmentation.morphological_chan_vese(
-			self.params.getImage().getImage(), init_level_set=
-			self.params.getInitLvlSetMorph(), smoothing=
+			self.params.getImage().getImage(), iterations=self.params.getIters,
+			init_level_set=	self.params.getInitLvlSetMorph(), smoothing=
 			self.params.getSmoothing(), lambda1=self.params.getLambdaOne()
 			, lambda2=self.params.getLambdaTwo())
 		return output
@@ -306,13 +307,11 @@ class AlgorithmSpace(object):
 		gimage = skimage.segmentation.inverse_gaussian_gradient(
 			self.params.getImage().getImage(), self.params.getAlpha(), 
 			self.params.getSigma())
-		print("gimage")
 		output = skimage.segmentation.morphological_geodesic_active_contour(
 			gimage, self.params.getIters(), self.params.getInitLvlSetMorph(),
 			smoothing= self.params.getSmoothing(), 
 			threshold=self.params.getThresh(), balloon= 
 			self.params.getBalloon())
-		print("outputting")
 
 		return output
 	'''
@@ -412,5 +411,4 @@ class AlgorithmSpace(object):
 			'FF': self.runFloodFill
 		}
 		func = switcher.get(self.params.getAlgo(), "Invalid code")
-		print(func())
 		return func()
