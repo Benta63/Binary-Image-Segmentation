@@ -20,4 +20,8 @@ Image segmentation is usually a time-consuming process. Usually, a researcher ne
 * Fix AC algorithm
 * Refer to Deap's Basic.fitness
   * https://deap.readthedocs.io/en/master/api/base.html#deap.base.Fitness
+* Create mutation function
+
+## Notes
+* May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
   
