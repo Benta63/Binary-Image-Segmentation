@@ -17,7 +17,7 @@ Image segmentation is usually a time-consuming process. Usually, a researcher ne
 * copy
 
 ## Todo
+* Fix AC algorithm
 * Refer to Deap's Basic.fitness
   * https://deap.readthedocs.io/en/master/api/base.html#deap.base.Fitness
-  * Need to correct creator.create("Fitness***", base.fitness, ????)
   
