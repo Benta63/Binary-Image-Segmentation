@@ -7,7 +7,7 @@ import random
 class AlgorithmParams(object):
 	
 	def __init__(self, img, algo="", beta=0.0, tol=0.0, scale=0.0,
-		sigma=0.1, min_size=0, n_segments=2, compactness=0.001, iters=1,
+		sigma=0.1, min_size=0, n_segments=2, compactness=0.001, iters=10,
 		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, connectivity=1,
 		mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0, init_level_set_chan=None,
 		init_level_set_morph=None,smoothing=1, threshold='auto', alpha=0.0,
