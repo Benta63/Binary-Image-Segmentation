@@ -24,9 +24,6 @@ Image segmentation is usually a time-consuming process. Usually, a researcher ne
 
 ## Notes
 * May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
-* Go through labeled leaf images to change to one color for
-  * This project is on binary image segmentation, thus the validation images should only be two colors.
-* Refer to Deap's Basic.fitness
-  * https://deap.readthedocs.io/en/master/api/base.html#deap.base.Fitness
-  * Need to correct creator.create("Fitness***", base.fitness, ????)
+* LabelOne changes already labeled images to binary.
+  * Useful if the images are labeled with more than two colors
   
