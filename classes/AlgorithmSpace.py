@@ -24,7 +24,6 @@ class AlgorithmSpace(object):
 		self.params = parameters
 		#Whether this is a multichannel array or grayscale
 		self.channel = False
-		print(type(self.params.getImage()))
 		if (self.params.getImage().getDim() > 2):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
@@ -126,6 +125,9 @@ class AlgorithmSpace(object):
 	#Code for algorithm == SC
 	'''
 	def runSlic(self):
+		#print("Sigma: ", self.params.getSigma())
+		#print("n Segs: ", self.params.getSegments())
+		#print("Iters: ", self.params.getIters())
 		output = skimage.segmentation.slic(
 			self.params.getImage().getImage(),
 			n_segments=self.params.getSegments(), compactness=
@@ -182,13 +184,13 @@ class AlgorithmSpace(object):
 	compactness -> float, compactness of the basins Higher values make more
 		regularly-shaped basin
 	'''
-	#Not using connectivity or markers params as arrays as they would
+	#Not using connectivity, markers, or offset params as arrays would
 	#expand the search space too much.
 	#Code for algorithm = WS
 
 	def runWaterShed(self):
 		output = skimage.segmentation.watershed(
-			self.params.getImage().getImage(), 
+			self.params.getImage().getImage(),markers=None,
 			compactness=self.params.getCompact())
 		return output
 	

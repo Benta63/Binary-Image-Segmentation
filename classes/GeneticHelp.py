@@ -4,6 +4,7 @@ import skimage.measure
 from . import AlgorithmParams
 from . import AlgorithmSpace
 import cv2
+import copy
 class GeneticHelp(object):
 	
 	#Returns a number from a list with certain values being weighted
@@ -66,18 +67,32 @@ class GeneticHelp(object):
 		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
 		return np1, np2
 
-	#TUL THIS OUT MORE
-	def mutate(child, posVals, flipProb = 0.05):
+	#I need to make a new crossover method
+	def skimageCrossRandom(np1, np2):
+		assert(len(np1) == len(np2))
+		#The number of places that we'll cross
+		crosses = random.randrange(len(np1))
+		#We pick that many crossing points
+		indexes = random.sample(range(1, len(np1)+1), crosses)
+		#And at those crossing points, we switch the parameters
+		for i in range(0, len(np1)):
+			print ("Switch the two")
+
+
+
+
+
+	#This is wrong. I have to debug
+	def mutate(child, posVals, flipProb = 0.3):
 		#Just because we chose to mutate a value doesn't mean we mutate
 		#Every aspect of the value	
 		for index in range(0, len(child)):
 			randVal = random.random()
 			if randVal < flipProb:
 				#Then we mutate said value
+
 				child[index] = random.choice(posVals[index])
-		
-
-
+				
 
 	'''Takes in two ImageData obects and compares them according to
 	skimage's Structual Similarity Index and the mean squared error
@@ -89,16 +104,15 @@ class GeneticHelp(object):
 		channel = False
 		if imgDim > 2: channel = True
 		#Comparing the Structual Similarity Index (SSIM) of two images
-		#ssim = skimage.measure.compare_ssim(img1, img2, multichannel=channel)
+		#ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, multichannel=channel)
 		#Comparing the Mean Squared Error
-		
 		mse = skimage.measure.compare_nrmse(img1, img2)
-		
 		
 		return [mse,]
 
 	#Runs an imaging algorithm given the parameters from the population
-	def runAlgo(img, valImg, individual):
+	def runAlgo(copyImg, valImg, individual):
+		img = copy.deepcopy(copyImg)
 		params = AlgorithmParams.AlgorithmParams(img, individual[0],
 			individual[1], individual[2], individual[3], individual[4],
 			individual[5], individual[6], individual[7], individual[8],
@@ -108,8 +122,9 @@ class GeneticHelp(object):
 			, individual[19], 'auto', individual[20], individual[21])
 
 		Algo = AlgorithmSpace.AlgorithmSpace(params)
-		print(params.getAlgo())
-
+		'''for i in range(0, len(individual)):
+			if individual[i] == 10:
+				print("Index iteration: ", i)'''
 		#Python's version of a switch-case
 		AllAlgos = {
 			'RW': Algo.runRandomWalker,
@@ -137,7 +152,7 @@ class GeneticHelp(object):
 		RGBAlgos = {
 			'RW': Algo.runRandomWalker,
 			'FB': Algo.runFelzenszwalb,
-			'SC': Algo.runSlic,
+			'SC': Algo.runSlic, #Problem here
 			'QS': Algo.runQuickShift,
 			'WS': Algo.runWaterShed,
 			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
@@ -150,24 +165,24 @@ class GeneticHelp(object):
 		BoolArrs = ['CV','FD']
 		#The functions in Masks and BoolArrs will need to pass through
 		#More functions before they are ready for the fitness function
-		
+		#print (params.getAlgo())
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
 		#If the algorithm is not right for the image, return an
 		#very large number
+		#print (params.getAlgo())
 		if (params.getAlgo() not in switcher): return [1000,]
-		print("in switcher")
 		func = switcher.get(params.getAlgo(), "Invalid Code")
-		newImg = func()
-		print("Before algo")
+
+		
+		img = func()
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
 
-		print("after algo")
-
+		#The algorithms in Masks and BoolArrs need to be applied to the img
+		#again
 		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
 			img = runAlg.runMarkBoundaries(img)
-
 		#print ("Shapes", len(img.shape), valImg.getDim())
 		# if params.getAlgo() == 'AC':
 		# 	print ("Meep")
@@ -176,6 +191,5 @@ class GeneticHelp(object):
 		#print ("End genetic")
 		evaluate = GeneticHelp.FitnessFunction(img, 
 			valImg.getImage(), len(img.shape))
-		print("evaluated")
 		
 		return (evaluate)

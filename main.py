@@ -31,6 +31,9 @@ from classes.Mutate import Mutate
 
 
 if __name__ == '__main__':
+	seed = random.randrange(sys.maxsize)
+	rng = random.Random(seed)
+	print("Seed was:", seed)
 	#Will later have user input to find where the images are
 	ImagePath = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 	if (FileClass.check_dir(ImagePath) == False):
@@ -52,7 +55,8 @@ if __name__ == '__main__':
 		files]
 
 	#Let's get all possible values in lists
-	Algos = ['FB','SC','QS','WS','CV','MCV','AC'] #Need to add floods
+	Algos = ['FB','SC','WS','CV','MCV','AC'] #Need to add floods
+	#Quickshift(QS) takes a long time, so I'm taking it out for now.
 	betas = [i for i in range(0,10000)]
 	tolerance = [float(i)/1000 for i in range(0,1000,1)]
 	scale = [i for i in range(0,10000)]
@@ -60,7 +64,7 @@ if __name__ == '__main__':
 	#Sigma should be weighted more from 0-1
 	min_size = [i for i in range(0,10000)]
 	n_segments = [i for i in range(2,10000)]
-	iterations = [1000]
+	iterations = [10, 10]
 	ratio = [float(i)/100 for i in range(0,100)]
 	kernel = [i for i in range(0,10000)]
 	max_dists = [i for i in range(0,10000)]
@@ -83,9 +87,9 @@ if __name__ == '__main__':
 	#seed_point = 
 	#new_value = 
 	AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
-			  n_segments, iterations, ratio, kernel, max_dists,
-			  random_seed, connectivity, compactness, mu, Lambdas, dt,
-			  init_leve_set_chan, init_level_set_morph, smoothing,
+			  n_segments, compactness, iterations, ratio, kernel, max_dists,
+			  random_seed, connectivity, mu, Lambdas, dt,
+			  init_level_set_chan, init_level_set_morph, smoothing,
 			  alphas, balloon]
 
 	#Using the DEAP genetic algorithm to make One Max
@@ -96,11 +100,10 @@ if __name__ == '__main__':
 
 	#Need to read up on base.Fitness function
 	####### 
-	creator.create("FitnessMin", base.Fitness, weights=(0.001,))
+	creator.create("FitnessMin", base.Fitness, weights=(-0.001,))
 	######
 
 	creator.create("Individual", list, fitness=creator.FitnessMin)
-	
 	#
 
 	toolbox = base.Toolbox()
@@ -112,9 +115,9 @@ if __name__ == '__main__':
 	toolbox.register("evaluate", GA.runAlgo)
 	#I will have to create my own mutation function as not all of the values
 	#are the same
-	toolbox.register("mutate", Mutate.run)
+	toolbox.register("mutate", GA.mutate)
 	toolbox.register("select", tools.selTournament, tournsize=3)
-	
+
 	#deap.tools.init_Cycle(container, seq_func, n)
 	#Container: data type
 	#seq_func: List of function objects to be called in order to fill container
@@ -171,7 +174,7 @@ if __name__ == '__main__':
 		, func_seq, n=1)
 
 	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual, 100)
+		toolbox.individual, n=1000)
 
 
 	pop = toolbox.population()
@@ -182,8 +185,8 @@ if __name__ == '__main__':
 	#pop = toolbox.population()
 	Images = [AllImages[0] for i in range(0, len(pop))]
 	ValImages = [ValImages[0] for i in range(0, len(pop))]
-	fitnesses = list(map(toolbox.evaluate, AllImages, ValImages, pop))
 
+	fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
 	
 	for ind, fit in zip(pop, fitnesses):
 		ind.fitness.values = fit
@@ -203,7 +206,7 @@ if __name__ == '__main__':
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = 0.2, 0.5, 100
+	cxpb, mutpb, ngen = 0.2, 0.5, 50
 	gen = 0
 
 	leng = len(pop)
@@ -222,27 +225,31 @@ if __name__ == '__main__':
 		offspring = list(map(toolbox.clone, offspring))
 
 		#crossover
-		for child1, child2 in zip(offspring[::2], offspring[1::2]):
+		#Two point crossover won't work as not all the values are the same
+		'''for child1, child2 in zip(offspring[::2], offspring[1::2]):
 			#Do we crossover?
 			if random.random() < cxpb:
 				toolbox.mate(child1, child2)
 				del child1.fitness.values
 				del child2.fitness.values
-		
+		'''
 		#mutation
 		#Right now we don't have a working mutation function
 		for mutant in offspring:
 			if random.random() < mutpb:
-				toolbox.mutate(mutant, AllVals, 0.05)
-				del mutant.fitness.values	
+				flipProb = 0.05
+				toolbox.mutate(mutant, AllVals, flipProb)
+				del mutant.fitness.values
+
 		#Let's just evaluate the mutated and crossover individuals
 		invalInd = [ind for ind in offspring if not ind.fitness.valid]
 		NewImage = [AllImages[0] for i in range(0, len(invalInd))]
 		NewVal = [ValImages[0] for i in range(0, len(invalInd))]
 		fitnesses = map(toolbox.evaluate, NewImage, NewVal, invalInd)
+		
 		for ind, fit in zip(invalInd, fitnesses):
 			ind.fitness.values = fit
-
+		print("Got the fitnesses")
 		#Replacing the old population
 		pop[:] = offspring
 
