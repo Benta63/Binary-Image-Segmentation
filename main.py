@@ -28,8 +28,6 @@ from classes import Mutate
 from classes.Mutate import Mutate
 
 
-
-
 if __name__ == '__main__':
 	seed = random.randrange(sys.maxsize)
 	rng = random.Random(seed)
@@ -111,7 +109,7 @@ if __name__ == '__main__':
 	toolbox.register("attr_bool", random.randint, 0, 1000)
 	#Structural initializers
 	
-	toolbox.register("mate", tools.cxTwoPoint)
+	toolbox.register("mate", GA.skimageCrossRandom)
 	toolbox.register("evaluate", GA.runAlgo)
 	#I will have to create my own mutation function as not all of the values
 	#are the same
@@ -174,7 +172,7 @@ if __name__ == '__main__':
 		, func_seq, n=1)
 
 	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual, n=1000)
+		toolbox.individual, n=10)
 
 
 	pop = toolbox.population()
@@ -193,14 +191,12 @@ if __name__ == '__main__':
 	#Algo = AlgorithmSpace(AlgoParams)
 	extractFits = [ind.fitness.values[0] for ind in pop]
 
-
-
 	#print (pop.fitness.valid)
 	#print (pop.fitness)
 	#fitness = GA.runAlgo(AllImages[0], ValImages[0], pop[0])
-	hof = tools.HallOfFame(1)
-	stats = tools.Statistics(lambda ind: ind.fitness.values)
-	stats.register("avg", np.mean)
+	#hof = tools.HallOfFame(1)
+	#stats = tools.Statistics(lambda ind: ind.fitness.values)
+	#stats.register("avg", np.mean)
 
 	#cxpb = probability of two individuals mating
 	#mutpb = probability of mutation
@@ -226,13 +222,13 @@ if __name__ == '__main__':
 
 		#crossover
 		#Two point crossover won't work as not all the values are the same
-		'''for child1, child2 in zip(offspring[::2], offspring[1::2]):
+		for child1, child2 in zip(offspring[::2], offspring[1::2]):
 			#Do we crossover?
 			if random.random() < cxpb:
 				toolbox.mate(child1, child2)
 				del child1.fitness.values
 				del child2.fitness.values
-		'''
+		
 		#mutation
 		#Right now we don't have a working mutation function
 		for mutant in offspring:
