@@ -24,8 +24,6 @@ from classes import FileClass
 from classes.FileClass import FileClass
 from classes import GeneticHelp
 from classes.GeneticHelp import GeneticHelp as GA
-from classes import Mutate
-from classes.Mutate import Mutate
 
 
 if __name__ == '__main__':

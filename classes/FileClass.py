@@ -4,12 +4,15 @@ import os
 
 class FileClass(object):
 	#Writes an image to a file
-	#img is an ImageData object, fileName is the name of the file
+	#Variables
+	#img is an ImageData object, 
+	#fileName is the name of the file
 	def writeImage(img, fileName):
 		cv2.imwrite(fileName, img.getImage())
 
 	#Writes the text representation of an image to a file
-	#img is an ImageData object, txtName is the name of the file
+	#img is an ImageData object
+	#txtName is the name of the file
 	def writeData(img, txtName):
 		file = open(txtName, 'w+')
 		for line in img.getImage():
@@ -19,14 +22,15 @@ class FileClass(object):
 		file.write(str(img.getImage()))
 		file.close()
 
-	#Checks if a directory exists
+	#Checks if a directory exists where 'path' is said directory
 	def check_dir(path):
 		directory = os.path.dirname(path)
 		if not os.path.exists(path):
 			return False
 		return True
 
-	#Checks if a directory exists. If it doesn't creates it
+	#Checks if a directory exists. If it doesn't creates
+	#path is said directory
 	def check_and_create(path):
 		if (check_dir(path) == False):
 			os.makedirs(path)

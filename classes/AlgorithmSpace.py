@@ -37,7 +37,6 @@ class AlgorithmSpace(object):
 	on grayscale and multichannel images,
 
 	#Returns a labeled image (ndarray)
-
 	#Variables:
 	data -> Image (ndarray)
 	labels -> Same shape as data, ndarray
@@ -79,16 +78,17 @@ class AlgorithmSpace(object):
 	The felzenszwalb algorithms computes a graph based on the segmentation
 	Produces an oversegmentation of the multichannel using min-span tree.
 	Returns an integer mask indicating the segment labels
+	#Variables
+	data : Image (ndarray)
 	scale: float, higher meanse larger clusters
 	sigma: float, std. dev of Gaussian kernel for preprocessing
 	min_size: int, minimum component size. For postprocessing
 	mulitchannel: bool, Whether the image is 2D or 3D. 2D images
 		are not supported at all
 
-	#Needs testing to find correct values'
 
 	'''
-	#Code for algorithm == FB
+	#Abbreviaiton for algorithm == FB
 
 	def runFelzenszwalb(self):
 		output = skimage.segmentation.felzenszwalb(
@@ -122,12 +122,9 @@ class AlgorithmSpace(object):
 	multichannel -- bool,  multichannel (True) vs grayscale (False)
 	#Needs testing to find correct values
 	
-	#Code for algorithm == SC
+	#Abbreviation for algorithm == SC
 	'''
 	def runSlic(self):
-		#print("Sigma: ", self.params.getSigma())
-		#print("n Segs: ", self.params.getSegments())
-		#print("Iters: ", self.params.getIters())
 		output = skimage.segmentation.slic(
 			self.params.getImage().getImage(),
 			n_segments=self.params.getSegments(), compactness=
@@ -156,7 +153,7 @@ class AlgorithmSpace(object):
 	convert2lab -- bool: leave alone
 	random_seed -- int, Random seed used for breacking ties. 
 	'''
-	#Code for algorithm == QS
+	#Abbreviation for algorithm == QS
 
 	def runQuickShift(self):
 		output = skimage.segmentation.quickshift(
@@ -186,7 +183,7 @@ class AlgorithmSpace(object):
 	'''
 	#Not using connectivity, markers, or offset params as arrays would
 	#expand the search space too much.
-	#Code for algorithm = WS
+	#abbreviation for algorithm = WS
 
 	def runWaterShed(self):
 		output = skimage.segmentation.watershed(
@@ -227,7 +224,7 @@ class AlgorithmSpace(object):
 	extended_output: bool, If true, adds more returns 
 		(Final level set & energies)
 	'''
-	#Code for Algorithm = CV
+	#Abbreviation for Algorithm = CV
 	
 	def runChanVese(self):
 		output = skimage.segmentation.chan_vese(
@@ -265,7 +262,7 @@ class AlgorithmSpace(object):
 	lambda2: Weight param for inner region. If larger thant lambda1, inner
 		region will have a larger range of values than outer region
 	'''
-	#Code for algorithm = MCV
+	#Abbreviation for algorithm = MCV
 
 	def runMorphChanVese(self):
 		output = skimage.segmentation.morphological_chan_vese(
@@ -302,7 +299,7 @@ class AlgorithmSpace(object):
 		are borders
 	balloon: float, guides contour of low-information parts of image, 	
 	'''
-	#Code for algorithm = AC
+	#Abbrevieation for algorithm = AC
 
 	def runMorphGeodesicActiveContour(self):
 		#We run the inverse_gaussian_gradient to get the image to use
@@ -333,7 +330,7 @@ class AlgorithmSpace(object):
 	tolerance: float or int, If none, adjacent values must be equal to 
 		seed_point. Otherwise, how likely adjacent values are flooded.
 	'''
-	#Code for algorithm = FD
+	#Abbreviation for algorithm = FD
 
 	def runFlood(self):
 		output = skimage.segmentation.flood(self.params.getImage().getImage()
@@ -361,7 +358,7 @@ class AlgorithmSpace(object):
 	inplace: bool, If true, the flood filling is applied to the image,
 		if False, the image is not modified. Default False, don't change
 	'''
-	#Code for algorithm == FF
+	#Abbreviation for algorithm == FF
 
 	def runFloodFill(self):
 		output = skimage.segmentation.flood_fill(
@@ -386,12 +383,13 @@ class AlgorithmSpace(object):
 	background_label: int, which label to consider background, optional
 		Only useful in inner and outer mode
 	'''
-	#Code for algorithm == MB
+	#Abbreviations for algorithm == MB
 	#Probably want to pass in color
 	'''This is not an image segmentation algorithm on its own. It requires
 		another algorithm to create a mask first
 	'''
-	#Uses Felzenszwalb, slic, 
+	#Uses Felzenszwalb, slic,
+
 	def runMarkBoundaries(self, mask):
 		output = skimage.segmentation.mark_boundaries(
 			self.params.getImage().getImage(), mask)
