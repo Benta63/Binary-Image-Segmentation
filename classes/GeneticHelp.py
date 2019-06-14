@@ -7,12 +7,14 @@ import cv2
 import copy
 class GeneticHelp(object):
 	
-	#Returns a number from a list with certain values being weighted
+	#Returns a number from a list with certain values being weighted.
+	#Variables:
+	#seq is the sequence to be weighted
+	#minVal is the minimum value to be weighted higher
+	#maxVal is the maximum value to be weighted higher
+	#weight is what the values from minVal to maxVal should be weighted
 	def weighted_choice(seq, minVal, maxVal, weight):
-		#seq is the sequence to be weighted
-		#minVal is the minimum value to be weighted higher
-		#maxVal is the maximum value to be weighted higher
-		#weight is what the values from minVal to maxVal should be weighted
+		
 		weights = []
 		#Here we compute the number of values between minVal and maxVal
 		counter = 0
@@ -21,10 +23,11 @@ class GeneticHelp(object):
 				counter += 1
 
 		for i in range(0, len(seq)):
-			#Populates the weights list. 
-			#Example: If weight is 0.5 and there are 5 values between
-			#minVal and maxVal, there is a 0.1 chance of each of those
-			#values
+			'''Populates the weights list. 
+			Example: If weight is 0.5 and there are 5 values between
+			minVal and maxVal, there is a 0.1 chance of each of those
+			values
+			'''
 			if (i < counter):
 				weights.append(weight/counter)
 			else:
@@ -46,14 +49,6 @@ class GeneticHelp(object):
 		#So we have the index
 		return seq[weightIndex]
 
-
-
-
-
-	#The fitness function. Need to change a lot
-	def evalOneMax(individual):
-		return sum(individual)
-
 	#Executes a crossover between two numpy arrays of the same length
 	def twoPointCopy(np1, np2):
 		assert(len(np1) == len(np2))
@@ -64,23 +59,25 @@ class GeneticHelp(object):
 			point2 +=1
 		else: #Swap the two points
 			point1, point2 = point2, point1
-		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
+		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy()
+			, np1[point1:point2].copy()
 		return np1, np2
 
-	#I need to make a new crossover method
+	'''Executes a crossover between two arrays (np1 and np2) picking a 
+	random amount of indexes to change between the two.
+	'''
 	def skimageCrossRandom(np1, np2):
 		assert(len(np1) == len(np2))
 		#The number of places that we'll cross
 		crosses = random.randrange(len(np1))
 		#We pick that many crossing points
-		indexes = random.sample(range(1, len(np1)+1), crosses)
+		indexes = random.sample(range(0, len(np1)), crosses)
 		#And at those crossing points, we switch the parameters
-		for i in range(0, len(np1)):
-			print ("Switch the two")
+		
+		for i in indexes:
+			np1[i], np2[i] = np2[i], np1[i]
 
-
-
-
+		return np1, np2
 
 	#This is wrong. I have to debug
 	def mutate(child, posVals, flipProb = 0.3):
@@ -96,24 +93,35 @@ class GeneticHelp(object):
 
 	'''Takes in two ImageData obects and compares them according to
 	skimage's Structual Similarity Index and the mean squared error
+	Variables:
+	img1 is an image array segmented by the algorithm. 
+	img2 is the validation image
+	imgDim is the number of dimensions of the image.
 	'''
-	def FitnessFunction(img1, img2, imgDim):
-		
-		#assert(len(img1.shape) == len(img2.shape))
-		#assert(type(img1) == type(img2))
+	def FitnessFunction(img1, img2, imgDim):	
+		assert(len(img1.shape) == len(img2.shape) == imgDim)
+
+		#The channel deterimines if this is a RGB or grayscale image
 		channel = False
 		if imgDim > 2: channel = True
 		#Comparing the Structual Similarity Index (SSIM) of two images
-		#ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, multichannel=channel)
-		#Comparing the Mean Squared Error
+		#ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, 
+			#multichannel=channel)
+		#Comparing the Mean Squared Error of the two image
 		mse = skimage.measure.compare_nrmse(img1, img2)
 		
 		return [mse,]
 
-	#Runs an imaging algorithm given the parameters from the population
+	'''Runs an imaging algorithm given the parameters from the population
+	Variables:
+	copyImg is an ImageData object of the image
+	valImg is an ImageData object of the validation image
+	individual is the parameter that we chose
+	'''
 	def runAlgo(copyImg, valImg, individual):
 		img = copy.deepcopy(copyImg)
-		params = AlgorithmParams.AlgorithmParams(img, individual[0],
+		#Making an AlorithmParams object
+		params = AlgorithmSpace.AlgorithmSpace(img, individual[0],
 			individual[1], individual[2], individual[3], individual[4],
 			individual[5], individual[6], individual[7], individual[8],
 			individual[9], individual[10], individual[11], individual[12]
@@ -121,10 +129,10 @@ class GeneticHelp(object):
 			individual[15][1], individual[16], individual[17], individual[18]
 			, individual[19], 'auto', individual[20], individual[21])
 
+		print("Did it")
+		sys.exit(0)
+		#Reading the Alr
 		Algo = AlgorithmSpace.AlgorithmSpace(params)
-		'''for i in range(0, len(individual)):
-			if individual[i] == 10:
-				print("Index iteration: ", i)'''
 		#Python's version of a switch-case
 		AllAlgos = {
 			'RW': Algo.runRandomWalker,
@@ -165,7 +173,6 @@ class GeneticHelp(object):
 		BoolArrs = ['CV','FD']
 		#The functions in Masks and BoolArrs will need to pass through
 		#More functions before they are ready for the fitness function
-		#print (params.getAlgo())
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
 		#If the algorithm is not right for the image, return an
