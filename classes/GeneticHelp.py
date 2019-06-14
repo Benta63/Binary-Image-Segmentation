@@ -59,7 +59,8 @@ class GeneticHelp(object):
 			point2 +=1
 		else: #Swap the two points
 			point1, point2 = point2, point1
-		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
+		np1[point1:point2], np2[point1:point2] = 
+		np2[point1:point2].copy(), np1[point1:point2].copy()
 		return np1, np2
 
 	'''Executes a crossover between two arrays (np1 and np2) picking a 
@@ -111,7 +112,8 @@ class GeneticHelp(object):
 		
 		return [mse,]
 
-	'''Runs an imaging algorithm given the parameters from the population
+	'''Runs an imaging algorithm given the parameters from the 
+		population
 	Variables:
 	copyImg is an ImageData object of the image
 	valImg is an ImageData object of the validation image
@@ -123,10 +125,11 @@ class GeneticHelp(object):
 		params = AlgorithmParams.AlgorithmParams(img, individual[0],
 			individual[1], individual[2], individual[3], individual[4],
 			individual[5], individual[6], individual[7], individual[8],
-			individual[9], individual[10], individual[11], individual[12]
-			, individual[13], individual[14], individual[15][0],
-			individual[15][1], individual[16], individual[17], individual[18]
-			, individual[19], 'auto', individual[20], individual[21])
+			individual[9], individual[10], individual[11], 
+			individual[12], individual[13], individual[14], 
+			individual[15][0],individual[15][1], individual[16],
+			individual[17], individual[18], individual[19], 'auto',
+			individual[20], individual[21])
 
 
 		Algo = AlgorithmSpace.AlgorithmSpace(params)
@@ -174,7 +177,8 @@ class GeneticHelp(object):
 		#More functions before they are ready for the fitness function
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
-		#If the algorithm is not right for the image, return large number
+		#If the algorithm is not right for the image, return large 
+		#	number
 		if (params.getAlgo() not in switcher): return [1000,]
 		#Running the algorithm and parameters on the image
 		func = switcher.get(params.getAlgo(), "Invalid Code")	
@@ -183,7 +187,8 @@ class GeneticHelp(object):
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
 
-		#The algorithms in Masks and BoolArrs need to be applied to the img
+		#The algorithms in Masks and BoolArrs need to be applied to the
+		#	img
 		#using runMarkBoundaries
 		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
 			img = runAlg.runMarkBoundaries(img)
