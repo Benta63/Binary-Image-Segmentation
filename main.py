@@ -39,17 +39,17 @@ if __name__ == '__main__':
 	seed = random.randrange(sys.maxsize)
 	rng = random.Random(seed)
 	print("Seed was:", seed)
-
+	#seed = SEED
 
 	#Will later have user input to find where the images are
 
-	#Checking the directoris
+	#Checking the directories
 	if (FileClass.check_dir(IMAGE_PATH) == False):
-		print ('ERROR: Directory %s does not exist'%IMAGE_PATH)
+		print ('ERROR: Directory \"%s\" does not exist'%IMAGE_PATH)
 		sys.exit(1)
 
 	if(FileClass.check_dir(VALIDATION_PATH) == False):
-		print("ERROR: Directory %s does not exist"%VALIDATION_PATH)
+		print("ERROR: Directory \"%s\" does not exist"%VALIDATION_PATH)
 		sys.exit(1)
 
 	#Making an ImageData object for all of the regular images

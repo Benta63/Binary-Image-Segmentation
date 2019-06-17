@@ -5,49 +5,8 @@ from . import AlgorithmParams
 from . import AlgorithmSpace
 import cv2
 import copy
-class GeneticHelp(object):
-	
-	#Returns a number from a list with certain values being weighted.
-	#Variables:
-	#seq is the sequence to be weighted
-	#minVal is the minimum value to be weighted higher
-	#maxVal is the maximum value to be weighted higher
-	#weight is what the values from minVal to maxVal should be weighted
-	def weighted_choice(seq, minVal, maxVal, weight):
-		
-		weights = []
-		#Here we compute the number of values between minVal and maxVal
-		counter = 0
-		for i in seq:
-			if minVal <= i <= maxVal:
-				counter += 1
 
-		for i in range(0, len(seq)):
-			'''Populates the weights list. 
-			Example: If weight is 0.5 and there are 5 values between
-			minVal and maxVal, there is a 0.1 chance of each of those
-			values
-			'''
-			if (i < counter):
-				weights.append(weight/counter)
-			else:
-				weights.append((1-weight)/(len(seq) - counter))
-		totals = []
-		cur_total = 0
-		
-		for w in weights:
-			cur_total += w
-			totals.append(cur_total)
-		#The randomization
-		rand = random.random() * cur_total
-		weightIndex = 0
-		#And to select the correct index
-		for i, total in enumerate(totals):
-			if rand < total:
-				weightIndex = i
-				break
-		#So we have the index
-		return seq[weightIndex]
+class GeneticHelp(object):
 
 	#Executes a crossover between two numpy arrays of the same length
 	def twoPointCopy(np1, np2):
@@ -59,8 +18,7 @@ class GeneticHelp(object):
 			point2 +=1
 		else: #Swap the two points
 			point1, point2 = point2, point1
-		np1[point1:point2], np2[point1:point2] = 
-		np2[point1:point2].copy(), np1[point1:point2].copy()
+		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy(), np1[point1:point2].copy()
 		return np1, np2
 
 	'''Executes a crossover between two arrays (np1 and np2) picking a 
@@ -79,17 +37,26 @@ class GeneticHelp(object):
 
 		return np1, np2
 
-	#This is wrong. I have to debug
-	def mutate(child, posVals, flipProb = 0.3):
+	''' Changes a few of the parameters of the weighting a random
+		number against the flipProb.
+		Variables:
+		copyChild is the individual to mutate
+		posVals is a list of lists where each list are the possible
+			values for that particular parameter
+		flipProb is how likely, it is that we will mutate each value.
+			It is computed seperately for each value. 
+	'''
+	def mutate(copyChild, posVals, flipProb = 0.5):
 		#Just because we chose to mutate a value doesn't mean we mutate
 		#Every aspect of the value	
+		child = copy.deepcopy(copyChild)
 		for index in range(0, len(child)):
 			randVal = random.random()
 			if randVal < flipProb:
 				#Then we mutate said value
 
 				child[index] = random.choice(posVals[index])
-				
+		return child		
 
 	'''Takes in two ImageData obects and compares them according to
 	skimage's Structual Similarity Index and the mean squared error
@@ -98,7 +65,7 @@ class GeneticHelp(object):
 	img2 is the validation image
 	imgDim is the number of dimensions of the image.
 	'''
-	def FitnessFunction(img1, img2, imgDim):	
+	def __FitnessFunction(img1, img2, imgDim):	
 		assert(len(img1.shape) == len(img2.shape) == imgDim)
 
 		#The channel deterimines if this is a RGB or grayscale image
@@ -136,38 +103,38 @@ class GeneticHelp(object):
 
 		#Python's version of a switch-case
 		#Listing all the algorithms. For fun?
-		AllAlgos = {
-			'RW': Algo.runRandomWalker,
-			'FB': Algo.runFelzenszwalb,
-			'SC': Algo.runSlic,
-			'QS': Algo.runQuickShift,
-			'WS': Algo.runWaterShed,
-			'CV': Algo.runChanVese,
-			'MCV': Algo.runMorphChanVese,
-			'AC': Algo.runMorphGeodesicActiveContour,
-			'FD': Algo.runFlood,
-			'FF': Algo.runFloodFill
-		}
+		AllAlgos = [
+			'RW',#: Algo.runRandomWalker,
+			'FB',#: Algo.runFelzenszwalb,
+			'SC',#: Algo.runSlic,
+			'QS',#: Algo.runQuickShift,
+			'WS',#: Algo.runWaterShed,
+			'CV',#: Algo.runChanVese,
+			'MCV',#: Algo.runMorphChanVese,
+			'AC',#: Algo.runMorphGeodesicActiveContour,
+			'FD',#: Algo.runFlood,
+			'FF',#: Algo.runFloodFill
+		]
 		#Some algorithms cannot be used on grayscale images
 		GrayAlgos = {
-			'RW': Algo.runRandomWalker,
-			'WS': Algo.runWaterShed,
-			'CV': Algo.runChanVese,
-			'MCV': Algo.runMorphChanVese,
-			'AC': Algo.runMorphGeodesicActiveContour,
-			'FD': Algo.runFlood,			
-			'FF': Algo.runFloodFill
+			'RW',#: Algo.runRandomWalker,
+			'WS',#: Algo.runWaterShed,
+			'CV',#: Algo.runChanVese,
+			'MCV',#: Algo.runMorphChanVese,
+			'AC',#: Algo.runMorphGeodesicActiveContour,
+			'FD',#: Algo.runFlood,			
+			'FF',#: Algo.runFloodFill
 		}
 		#Some algorithms are only good for colored images
 		RGBAlgos = {
-			'RW': Algo.runRandomWalker,
-			'FB': Algo.runFelzenszwalb,
-			'SC': Algo.runSlic, 
-			'QS': Algo.runQuickShift,
-			'WS': Algo.runWaterShed,
+			'RW',#: Algo.runRandomWalker,
+			'FB',#: Algo.runFelzenszwalb,
+			'SC',#: Algo.runSlic, 
+			'QS',#: Algo.runQuickShift,
+			'WS',#: Algo.runWaterShed,
 			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
 			#'AC': Algo.runMorphGeodesicActiveContour,
-			'FF': Algo.runFloodFill
+			'FF'#: Algo.runFloodFill
 		}
 		#Some algorithms return masks as opposed to the full images
 		Masks = ['FB', 'SC', 'QS']
@@ -177,12 +144,12 @@ class GeneticHelp(object):
 		#More functions before they are ready for the fitness function
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
-		#If the algorithm is not right for the image, return large 
+		#If the algorithm is not right for the image, returna large 
 		#	number
 		if (params.getAlgo() not in switcher): return [1000,]
 		#Running the algorithm and parameters on the image
-		func = switcher.get(params.getAlgo(), "Invalid Code")	
-		img = func()
+		#func = switcher.get(params.getAlgo(), "Invalid Code")	
+		#img = func()
 
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
@@ -194,7 +161,7 @@ class GeneticHelp(object):
 			img = runAlg.runMarkBoundaries(img)
 
 		#Running the fitness function
-		evaluate = GeneticHelp.FitnessFunction(img, 
+		evaluate = GeneticHelp.__FitnessFunction(img, 
 			valImg.getImage(), len(img.shape))
 		
 		return (evaluate)
