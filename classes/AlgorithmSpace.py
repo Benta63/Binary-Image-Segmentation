@@ -16,7 +16,6 @@ This class will run through all the algorithms in skimage.segmentation
 and change the parameters
 '''
 
-#Perhaps inherit from AlgorithmParams?
 class AlgorithmSpace(object):
 	def __init__(self, parameters):
 		#parameters is a AlgorithmParams object
@@ -56,7 +55,7 @@ class AlgorithmSpace(object):
 	#Code for algorithms == RW
 	#Not using RandomWalker because labels complicates the searchspace
 		
-	def runRandomWalker(self):
+	def __runRandomWalker(self):
 		#Let's deterime what mode to use
 		mode = ""
 		if len(self.parameters.getImage.getImage()) < 512 :
@@ -95,7 +94,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviaiton for algorithm == FB
 
-	def runFelzenszwalb(self):
+	def __runFelzenszwalb(self):
 		output = skimage.segmentation.felzenszwalb(
 			self.params.getImage().getImage(), self.params.getScale(),
 			self.params.getSigma(), self.params.getMinSize(),
@@ -129,7 +128,7 @@ class AlgorithmSpace(object):
 	
 	#Abbreviation for algorithm == SC
 	'''
-	def runSlic(self):
+	def __runSlic(self):
 		output = skimage.segmentation.slic(
 			self.params.getImage().getImage(),
 			n_segments=self.params.getSegments(), compactness=
@@ -160,7 +159,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviation for algorithm == QS
 
-	def runQuickShift(self):
+	def __runQuickShift(self):
 		output = skimage.segmentation.quickshift(
 			self.params.getImage().getImage(), 
 			ratio=self.params.getRatio(), 
@@ -191,7 +190,7 @@ class AlgorithmSpace(object):
 	#expand the search space too much.
 	#abbreviation for algorithm = WS
 
-	def runWaterShed(self):
+	def __runWaterShed(self):
 		output = skimage.segmentation.watershed(
 			self.params.getImage().getImage(),markers=None,
 			compactness=self.params.getCompact())
@@ -237,7 +236,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviation for Algorithm = CV
 	
-	def runChanVese(self):
+	def __runChanVese(self):
 		output = skimage.segmentation.chan_vese(
 			self.params.getImage().getImage(), mu=self.params.getMu,
 				lambda1=self.params.getLambdaOne(), lambda2=
@@ -279,7 +278,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviation for algorithm = MCV
 
-	def runMorphChanVese(self):
+	def __runMorphChanVese(self):
 		output = skimage.segmentation.morphological_chan_vese(
 			self.params.getImage().getImage(), 
 			iterations=self.params.getIters,
@@ -320,13 +319,12 @@ class AlgorithmSpace(object):
 	'''
 	#Abbrevieation for algorithm = AC
 
-	def runMorphGeodesicActiveContour(self):
+	def __runMorphGeodesicActiveContour(self):
 		#We run the inverse_gaussian_gradient to get the image to use
 		gimage = skimage.segmentation.inverse_gaussian_gradient(
 			self.params.getImage().getImage(), self.params.getAlpha(), 
 			self.params.getSigma())
-		output = 
-			skimage.segmentation.morphological_geodesic_active_contour(
+		output = skimage.segmentation.morphological_geodesic_active_contour(
 			gimage, self.params.getIters(), 
 			self.params.getInitLvlSetMorph(),
 			smoothing= self.params.getSmoothing(), 
@@ -354,7 +352,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviation for algorithm = FD
 
-	def runFlood(self):
+	def __runFlood(self):
 		output = skimage.segmentation.flood(
 			self.params.getImage().getImage(),
 			self.params.getSeedPoint(), selem=self.params.getSelem(),
@@ -384,7 +382,7 @@ class AlgorithmSpace(object):
 	'''
 	#Abbreviation for algorithm == FF
 
-	def runFloodFill(self):
+	def __runFloodFill(self):
 		output = skimage.segmentation.flood_fill(
 			self.params.getImage().getImage(), 
 			self.params.getSeedPoint(), self.params.getNewVal(),
@@ -427,16 +425,16 @@ class AlgorithmSpace(object):
 	#Runs the algorithm specified in params
 	def runAlgo(self):
 		switcher = {
-			'RW': self.runRandomWalker,
-			'FB': self.runFelzenszwalb,
-			'SC': self.runSlic,
-			'QS': self.runQuickShift,
-			'WS': self.runWaterShed,
-			'CV': self.runChanVese,
-			'MCV': self.runMorphChanVese,
-			'AC': self.runMorphGeodesicActiveContour,
-			'FD': self.runFlood,
-			'FF': self.runFloodFill
+			'RW': self.__runRandomWalker,
+			'FB': self.__runFelzenszwalb,
+			'SC': self.__runSlic,
+			'QS': self.__runQuickShift,
+			'WS': self.__runWaterShed,
+			'CV': self.__runChanVese,
+			'MCV': self.__runMorphChanVese,
+			'AC': self.__runMorphGeodesicActiveContour,
+			'FD': self.__runFlood,
+			'FF': self.__runFloodFill
 		}
 		func = switcher.get(self.params.getAlgo(), "Invalid code")
 		return func()
