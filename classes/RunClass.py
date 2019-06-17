@@ -28,10 +28,12 @@ POPULATION = 10
 GENERATIONS = 10
 
 class RunClass(object):
+	def FindBest(self, population):
+		return min(population, key=attrgetter("fitness"))
 
 	def RunGA(self, AllParams, SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT, ITER
 			 ,SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT, BALLOON_MIN, 
-			 BALLOON_MAX, BALLOON_WEIGHT, imgNum, imgName):
+			 BALLOON_MAX, BALLOON_WEIGHT, imgFile, valFile, imgName):
 
 		#Minimizing fitness function
 		creator.create("FitnessMin", base.Fitness, weights=(minFit,))
@@ -114,8 +116,8 @@ class RunClass(object):
 		pop = toolbox.population()
 		
 		#We're only looking at one image for now	
-		Images = [AllImages[imgNum] for i in range(0, len(pop))]
-		ValImages = [ValImages[imgNum] for i in range(0, len(pop))]
+		Images = [imgFile for i in range(0, len(pop))]
+		ValImages = [valFile for i in range(0, len(pop))]
 
 		#Evaluating the initial fitnesses
 		fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
@@ -195,11 +197,17 @@ class RunClass(object):
 			print(" Max: ", max(extractFits))
 			print(" Avg: ", mean)
 			print(" Std ", stdev)
+			best = self.FindBest(pop)
+			if best < 0.2:
+				#This implementations should be good enough
+				return(best, True)
 
 		#Can use tools.Statistics for this stuff maybe?
 
 		#Let's now find the 'best algorithm
-		best = min(pop, key=attrgetter("fitness"))
+		best = self.FindBest(pop)
+		if (best.fitness >= 0.5):
+			return(best, False)
 		#And now let's get an image
 		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
 			best[0], best[1], best[2], best[3], best[4], best[5], best[6], 
@@ -207,4 +215,6 @@ class RunClass(object):
 			best[13], best[14], best[15][0], best[15][1], best[16], 
 			best[17], best[18], best[19], 'auto', best[20], best[21]))
 		img = Space.runAlgo()
+		
 		cv2.imwrite(imgName, img)
+		return(best, True)

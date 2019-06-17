@@ -34,3 +34,16 @@ class FileClass(object):
 	def check_and_create(path):
 		if (check_dir(path) == False):
 			os.makedirs(path)
+
+	#Given a path, finds the type of image it is (e.g. .png, .jpeg)
+	def findImageType(path):
+		imgType = ""
+		isImage = False
+		for i in range(0, len(path)):
+			if isImage == True:
+				imgType += path[i]
+			elif path[i] == '.':
+				imgType = True
+		return imgType
+
+
