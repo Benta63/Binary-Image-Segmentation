@@ -1,11 +1,11 @@
 #Lightly Coupled with ImageData class
 #A class with accessors and modifiers for all the parameters used in
 #the skimage algorithms
-#from . import ImageData
 
 import random
+
 class AlgorithmParams(object):
-	
+	#Reading in all of the data
 	def __init__(self, img, algo="", beta=0.0, tol=0.0, scale=0.0,
 		sigma=0.1, min_size=0, n_segments=2, compactness=0.001, iters=10,
 		ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, connectivity=1,
@@ -14,36 +14,42 @@ class AlgorithmParams(object):
 		balloon=0.0, seed_point=[], new_value=""):
 
 		#img is an ImageData object
-		self.Image = img
-		self.algorithm = algo
-		self.beta = beta
-		self.tolerance = tol
-		self.scale = scale
-		self.sigma = sigma
-		self.min_size = min_size
-		self.n_segments = n_segments
-		self.compactness = compactness
-		self.iterations = iters
-		self.ratio = ratio
-		self.kernel_size = kernel
-		self.max_dist = max_dist
-		self.seed = random_seed
-		self.connectivity = connectivity
-		self.mu = mu
-		self.lambda1 = lambda1
-		self.lambda2 = lambda2
-		self.dt = dt
+		self.Image = img #The image, usually an ImageData object
+		self.algorithm = algo #The string code for the algorithm
+		self.beta = beta #A parameter for randomWalker So, I should take this out
+		self.tolerance = tol #A parameter for flood and flood_fill
+		self.scale = scale #A parameter for felzenszwalb
+		self.sigma = sigma #sigma value. A parameter for felzenswalb,
+			#inverse_guassian_gradient, slic, and quickshift
+		self.min_size = min_size #A parameter for felzenszwalb
+		self.n_segments = n_segments #A parameter for slic
+		self.compactness = compactness #A parameter for slic and watershed
+		self.iterations = iters #A parameter for both morphological algorithms
+		self.ratio = ratio #A parameter for ratio
+		self.kernel_size = kernel #A parameter for kernel_size
+		self.max_dist = max_dist #A parameter for quickshift
+		self.seed = random_seed #A parameter for quickshift, 
+			#and perhaps other random stuff
+		self.connectivity = connectivity #A parameter for flood and floodfill
+		self.mu = mu #A parameter for chan_vese
+		self.lambda1 = lambda1 #A parameter for chan_vese and morphological_chan_vese
+		self.lambda2 = lambda2 #A parameter for chan_vese and morphological_chan_vese
+		self.dt = dt #An algorithm for chan_vese
 		#May want to make seperate level sets for different functions
 			#e.g. Morph_chan_vese vs morph_geo_active_contour
-		self.init_level_set_chan = init_level_set_chan
-		self.init_level_set_morph = init_level_set_morph
-		self.smoothing = smoothing
-		self.threshold=threshold
-		self.smoothing = smoothing
-		self.alpha = alpha
-		self.balloon = balloon
-		self.seed_point = seed_point
-		self.new_value = new_value
+		self.init_level_set_chan = init_level_set_chan #A parameter
+			#for chan_vese and morphological_chan_vese
+		self.init_level_set_morph = init_level_set_morph #A parameter
+			#for morphological_chan_vese 
+		self.smoothing = smoothing #An algorithm used in
+			#morphological_geodesic_active_contour
+		self.threshold=threshold #An parameter for 
+			#morphological_geodesic_active_contour 
+		self.alpha = alpha #A parameter for inverse_guassian_gradient
+		self.balloon = balloon #A parameter for
+			#morphological_geodesic_active_contour
+		self.seed_point = seed_point #A parameter for flood and flood_fill
+		self.new_value = new_value #A parametr for flood_fill
 
 
 	#Accessors

@@ -40,7 +40,8 @@ if __name__ == '__main__':
 					continue
 				else:
 					picture.putpixel((x, y), 134)
-		imgName = OUT_PATH + "\\" + AllNames[counter].strip(".png") + str(counter) + ".png"
+		imgName = OUT_PATH + "\\" + AllNames[counter].strip(".png") + 
+			str(counter) + ".png"
 		print(imgName)
 		picture.save(imgName)
 

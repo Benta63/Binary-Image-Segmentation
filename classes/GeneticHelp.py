@@ -59,8 +59,8 @@ class GeneticHelp(object):
 			point2 +=1
 		else: #Swap the two points
 			point1, point2 = point2, point1
-		np1[point1:point2], np2[point1:point2] = np2[point1:point2].copy()
-			, np1[point1:point2].copy()
+		np1[point1:point2], np2[point1:point2] = 
+		np2[point1:point2].copy(), np1[point1:point2].copy()
 		return np1, np2
 
 	'''Executes a crossover between two arrays (np1 and np2) picking a 
@@ -112,7 +112,8 @@ class GeneticHelp(object):
 		
 		return [mse,]
 
-	'''Runs an imaging algorithm given the parameters from the population
+	'''Runs an imaging algorithm given the parameters from the 
+		population
 	Variables:
 	copyImg is an ImageData object of the image
 	valImg is an ImageData object of the validation image
@@ -121,19 +122,20 @@ class GeneticHelp(object):
 	def runAlgo(copyImg, valImg, individual):
 		img = copy.deepcopy(copyImg)
 		#Making an AlorithmParams object
-		params = AlgorithmSpace.AlgorithmSpace(img, individual[0],
+		params = AlgorithmParams.AlgorithmParams(img, individual[0],
 			individual[1], individual[2], individual[3], individual[4],
 			individual[5], individual[6], individual[7], individual[8],
-			individual[9], individual[10], individual[11], individual[12]
-			, individual[13], individual[14], individual[15][0],
-			individual[15][1], individual[16], individual[17], individual[18]
-			, individual[19], 'auto', individual[20], individual[21])
+			individual[9], individual[10], individual[11], 
+			individual[12], individual[13], individual[14], 
+			individual[15][0],individual[15][1], individual[16],
+			individual[17], individual[18], individual[19], 'auto',
+			individual[20], individual[21])
 
-		print("Did it")
-		sys.exit(0)
-		#Reading the Alr
+
 		Algo = AlgorithmSpace.AlgorithmSpace(params)
+
 		#Python's version of a switch-case
+		#Listing all the algorithms. For fun?
 		AllAlgos = {
 			'RW': Algo.runRandomWalker,
 			'FB': Algo.runFelzenszwalb,
@@ -146,7 +148,7 @@ class GeneticHelp(object):
 			'FD': Algo.runFlood,
 			'FF': Algo.runFloodFill
 		}
-		#Some algorithms can't be used on grayscale images
+		#Some algorithms cannot be used on grayscale images
 		GrayAlgos = {
 			'RW': Algo.runRandomWalker,
 			'WS': Algo.runWaterShed,
@@ -160,7 +162,7 @@ class GeneticHelp(object):
 		RGBAlgos = {
 			'RW': Algo.runRandomWalker,
 			'FB': Algo.runFelzenszwalb,
-			'SC': Algo.runSlic, #Problem here
+			'SC': Algo.runSlic, 
 			'QS': Algo.runQuickShift,
 			'WS': Algo.runWaterShed,
 			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
@@ -175,27 +177,23 @@ class GeneticHelp(object):
 		#More functions before they are ready for the fitness function
 		switcher = GrayAlgos
 		if (img.getDim() > 2): switcher = RGBAlgos
-		#If the algorithm is not right for the image, return an
-		#very large number
-		#print (params.getAlgo())
+		#If the algorithm is not right for the image, return large 
+		#	number
 		if (params.getAlgo() not in switcher): return [1000,]
-		func = switcher.get(params.getAlgo(), "Invalid Code")
-
-		
+		#Running the algorithm and parameters on the image
+		func = switcher.get(params.getAlgo(), "Invalid Code")	
 		img = func()
+
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
 
-		#The algorithms in Masks and BoolArrs need to be applied to the img
-		#again
+		#The algorithms in Masks and BoolArrs need to be applied to the
+		#	img
+		#using runMarkBoundaries
 		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
 			img = runAlg.runMarkBoundaries(img)
-		#print ("Shapes", len(img.shape), valImg.getDim())
-		# if params.getAlgo() == 'AC':
-		# 	print ("Meep")
-		# 	print(img.shape, valImg.getImage().shape)
-		#cv2.imwrite("test.png", img)
-		#print ("End genetic")
+
+		#Running the fitness function
 		evaluate = GeneticHelp.FitnessFunction(img, 
 			valImg.getImage(), len(img.shape))
 		
