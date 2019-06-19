@@ -10,6 +10,8 @@ from classes.GeneticHelp import GeneticHelp as GA
 
 from classes import RunClass
 from classes.RunClass import RunClass as RC
+from classes import RandomHelp
+from classes.RandomHelp import RandomHelp as RandHelp
 
 import threading
 import multiprocessing
@@ -21,16 +23,19 @@ from sys import stderr, stdin, stdout
 import os
 import random
 import copy
-
+import pickle
 
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
-VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_label'
-
+VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 
 def thread_func(name):
 	logging.ingo("Thread %s is starting", name)
 	time.sleep(2)
 	logging.info("Thread %s is finishing", name)
+
+def testStuff():
+	print("Made a thread!!")
+	return
 
 #Need to incorporate threading
 def background():
@@ -106,8 +111,6 @@ if __name__=='__main__':
 			  alphas, balloon]
 
 
-	print("Before Loop")
-
 	#Here we register all the parameters to the toolbox
 	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
 	ITER = 10
@@ -122,103 +125,86 @@ if __name__=='__main__':
 
 	#Let's do some threading
 	format = "%(asctime)s: %(message)s"
-	logging.basicConfig(fomat=format, level=logging.INFO, 
-		datefmt="%H:%M:%S")
+	#logging.basicConfig(fomat=format, level=logging.INFO, 
+		#datefmt="%H:%M:%S")
 
-	threads = list()
+	numFiles = input("Input the total number of files of your dataset ")
+	print(numFiles)
+	processes = multiprocessing.Queue(int(numFiles))
+	print (processes.qsize())
+	p = multiprocessing.Process(target=time.sleep, args=(1000,))
+	print(multiprocessing.current_process())
+	#print(p, p.is_alive())
+
 	#Do some kind of locking??
-	while not stdin.closed:
-		try:
+	for i in range(0,int(numFiles)):
+		p = multiprocessing.Process(target=testStuff)
+		processes.put(p,False)
+		p.start()
+		
+	print(multiprocessing.active_children())
+	cursor = 0
+	while cursor < len(AllImages):
+		cursor += 1
+		#If it's empty, we ignore it
+		if len(line) == 0:
+			continue
+		#Let's parse the line
+		parts = line.split()
 
-			rawInput = stdin.readline()
-			#Checking for end of file
-			if len(rawInput) == 0:
-				break
+		command = parts[0]
 
-			line = rawInput.strip()
-			#If it's empty, we ignore it
-			if len(line) == 0:
+		if command == 'image':
+			imageFile = parts[1]
+			imageVal = parts[2]
+			if FileClass.check_dir(imageFile) == False:
+				print("Please enter a correct path, %s does not exist", imageFile)
 				continue
-			#Let's parse the line
-			parts = line.split()
-
-			command = parts[0]
-
-			if command == 'image':
-				imageFile = parts[1]
-				imageVal = parts[2]
-				if FileClass.check_dir(imageFile) == False:
-					print("Please enter a correct path, %s does not exist", imageFile)
-					continue
-				if FileClass.check_dir(imageVal) == False:
-					print("Please enter a correct path, %s does not exist", imageVal)
-					continue
-				#Done with error checking, let's load the images into
-				#ImageData objects
-				imageObj = ImageData.ImageData(imageFile)
-				valObj = ImageData.ImageData(imageVal)
-				#Let's write to the same image type that was read in
-				imgType = findImageType(imageFile)
-				imageName = "data\\newImage" + str(imageCounter) + imgType
-
-				Algo, didWork = RunGA(AllVals, SIGMA_MIN, SIGMA_MAX, 
-								SIGMA_WEIGHT, ITER, SMOOTH_MIN, 
-								SMOOTH_MAX, SMOOTH_WEIGHT, 
-					  			BALLOON_MIN, BALLOON_MAX, 
-					  			BALLOON_WEIGHT, imgObj,valObj, 
-					  			imageName)
-
-				if (didWork == False):
-					print("Did not converge for the algorithm")
-					if goodAlgoCounter != 0:
-						goodAlgoCounter -= 1
-					continue
-				else:
-					#We found a good algorithm, We should test it on
-					#another image as well
-					goodAlgoCounter += 1
-					goodAlgo = Algo
-
-
-
-
-			elif command == 'quit':
-				#Should also get best image
-				sys.exit()
-
-			elif command == 'help':
+			if FileClass.check_dir(imageVal) == False:
+				print("Please enter a correct path, %s does not exist", imageVal)
 				continue
+			#Done with error checking, let's load the images into
+			#ImageData objects
+			imageObj = ImageData.ImageData(imageFile)
+			valObj = ImageData.ImageData(imageVal)
+			#Let's write to the same image type that was read in
+			imgType = findImageType(imageFile)
+			imageName = "data\\newImage" + str(imageCounter) + imgType
+			p = multiprocessing.Process(target=RunGA, args=AllVals, 
+							SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT, ITER,
+							SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT, 
+				  			BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT,
+				  			imgObj,valObj, imageName)
+			processes.put(p, False())
+			p.start()
+			'''Algo, didWork = RunGA(AllVals, SIGMA_MIN, SIGMA_MAX, 
+							SIGMA_WEIGHT, ITER, SMOOTH_MIN, 
+							SMOOTH_MAX, SMOOTH_WEIGHT, 
+				  			BALLOON_MIN, BALLOON_MAX, 
+				  			BALLOON_WEIGHT, imgObj,valObj, 
+				  			imageName)
+			'''
+			if (didWork == False):
+				print("Did not converge for the algorithm")
+				if goodAlgoCounter != 0:
+					goodAlgoCounter -= 1
+				continue
+			else:
+				#We found a good algorithm, We should test it on
+				#another image as well
+				goodAlgoCounter += 1
+				goodAlgo = Algo
 
-			if goodAlgoCounter >= 2:
+		break
 
+		'''elif command == 'quit':
+			#Should also get best image
+			sys.exit()
 
+		elif command == 'help':
+			continue
+
+		#if goodAlgoCounter >= 2:
+		'''
 
 	#Let's do some threading
-	'''format = "%(asctime)s: %(message)s"
-	logging.basicConfig(fomat=format, level=logging.INFO, 
-		datefmt="%H:%M:%S")
-
-	threads = list()
-
-	#thread1 = threading.Thread(target=background)
-	#thread1.daemon = True
-	#thread1.start()
-	threadCounter = 0
-	while True:
-		logging.info("Create and start thread %d.", threadCounter)
-		x = threading.Thread(target=thread_func, args=(threadCounter,))
-		threads.append(x)
-		x.start()
-
-
-		if input() == 'quit':
-			save_state()
-
-			#Need to add other stuff as well.
-
-			sys.exit()
-		else:
-
-			print("continue")
-
-	'''

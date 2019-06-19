@@ -58,7 +58,7 @@ class RunClass(object):
 		toolbox.register("attr_Tol", random.choice, AllParams[2])
 		toolbox.register("attr_Scale", random.choice, AllParams[3])
 		#While sigma can be any positive value, it should be small (0-1). 
-		toolbox.register("attr_Sigma", GA.weighted_choice, AllParams[4], SIGMA_MIN, 
+		toolbox.register("attr_Sigma", RandHelp.weighted_choice, AllParams[4], SIGMA_MIN, 
 			SIGMA_MAX, SIGMA_WEIGHT)
 		toolbox.register("attr_minSize", random.choice, AllParams[5])
 		toolbox.register("attr_nSegment", random.choice, AllParams[6])
@@ -78,11 +78,11 @@ class RunClass(object):
 		toolbox.register("attr_init_morph", random.choice, 
 			AllParams[16])
 		#smoothing should be 1-4, but can be any positive number
-		toolbox.register("attr_smooth", GA.weighted_choice, 
+		toolbox.register("attr_smooth", RandHelp.weighted_choice, 
 			AllParams[17], SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT)
 		toolbox.register("attr_alphas", random.choice, AllParams[18])
 		#Should be from -1 to 1, but can be any value
-		toolbox.register("attr_balloon", GA.weighted_choice, AllParams[19], 
+		toolbox.register("attr_balloon", RandHelp.weighted_choice, AllParams[19], 
 			BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT)
 		#Need to register a random seed_point and a correct new_value
 
@@ -125,8 +125,11 @@ class RunClass(object):
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
 		#Algo = AlgorithmSpace(AlgoParams)
-		extractFits = [ind.fitness.values[0] for ind in pop]
+		#Let's store the best indovidual 
+		hof = tools.HallOfFame(1)
 
+		extractFits = [ind.fitness.values[0] for ind in pop]
+		hof.update(pop)
 
 		#cxpb = probability of two individuals mating
 		#mutpb = probability of mutation
@@ -182,7 +185,7 @@ class RunClass(object):
 			
 			for ind, fit in zip(invalInd, fitnesses):
 				ind.fitness.values = fit
-			print("Got the fitnesses")
+
 			#Replacing the old population
 			pop[:] = offspring
 
@@ -202,11 +205,14 @@ class RunClass(object):
 				#This implementations should be good enough
 				return(best, True)
 
+			hof.update(extractFits)
+
 		#Can use tools.Statistics for this stuff maybe?
 
 		#Let's now find the 'best algorithm
-		best = self.FindBest(pop)
-		if (best.fitness >= 0.5):
+		#best = self.FindBest(pop)
+		best = hof[0]
+		if (best.fitness.values[0] >= 0.5):
 			return(best, False)
 		#And now let's get an image
 		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
@@ -218,3 +224,4 @@ class RunClass(object):
 		
 		cv2.imwrite(imgName, img)
 		return(best, True)
+		

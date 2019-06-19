@@ -13,6 +13,7 @@ from deap import creator
 from deap import tools
 from skimage import segmentation
 import cv2
+import time
 
 
 from classes import ImageData
@@ -24,17 +25,19 @@ from classes import FileClass
 from classes.FileClass import FileClass
 from classes import GeneticHelp
 from classes.GeneticHelp import GeneticHelp as GA
+from classes import RandomHelp
+from classes.RandomHelp import RandomHelp as RandHelp
 
 
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_label'
 SEED = 134
 POPULATION = 10
-GENERATIONS = 10
+GENERATIONS = 1
 
 
 if __name__ == '__main__':
-
+	initTime = time.time()
 	#To determine the seed for debugging purposes
 	seed = random.randrange(sys.maxsize)
 	rng = random.Random(seed)
@@ -137,7 +140,7 @@ if __name__ == '__main__':
 	toolbox.register("attr_Tol", random.choice, tolerance)
 	toolbox.register("attr_Scale", random.choice, scale)
 	#While sigma can be any positive value, it should be small (0-1). 
-	toolbox.register("attr_Sigma", GA.weighted_choice, sigma, SIGMA_MIN, 
+	toolbox.register("attr_Sigma", RandHelp.weighted_choice, sigma, SIGMA_MIN, 
 		SIGMA_MAX, SIGMA_WEIGHT)
 	toolbox.register("attr_minSize", random.choice, min_size)
 	toolbox.register("attr_nSegment", random.choice, n_segments)
@@ -156,11 +159,11 @@ if __name__ == '__main__':
 	toolbox.register("attr_init_morph", random.choice, 
 		init_level_set_morph)
 	#smoothing should be 1-4, but can be any positive number
-	toolbox.register("attr_smooth", GA.weighted_choice, smoothing, 
+	toolbox.register("attr_smooth", RandHelp.weighted_choice, smoothing, 
 		SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT)
 	toolbox.register("attr_alphas", random.choice, alphas)
 	#Should be from -1 to 1, but can be any value
-	toolbox.register("attr_balloon", GA.weighted_choice, balloon, 
+	toolbox.register("attr_balloon", RandHelp.weighted_choice, balloon, 
 		BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT)
 	#Need to register a random seed_point and a correct new_value
 	
@@ -191,7 +194,6 @@ if __name__ == '__main__':
 
 	pop = toolbox.population()
 	
-	
 	Images = [AllImages[0] for i in range(0, len(pop))]
 	ValImages = [ValImages[0] for i in range(0, len(pop))]
 
@@ -199,8 +201,14 @@ if __name__ == '__main__':
 	
 	for ind, fit in zip(pop, fitnesses):
 		ind.fitness.values = fit
+
+	#Keeps track of the best individual from any population
+	hof = tools.HallOfFame(1)
+
 	#Algo = AlgorithmSpace(AlgoParams)
 	extractFits = [ind.fitness.values[0] for ind in pop]
+	hof.update(pop)
+
 
 	#print (pop.fitness.valid)
 	#print (pop.fitness)
@@ -214,7 +222,7 @@ if __name__ == '__main__':
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = 0.2, 0.5, 50
+	cxpb, mutpb, ngen = 0.2, 0.5, GENERATIONS
 	gen = 0
 
 	leng = len(pop)
@@ -263,7 +271,7 @@ if __name__ == '__main__':
 		print("Got the fitnesses")
 		#Replacing the old population
 		pop[:] = offspring
-
+		hof.update(pop)
 		extractFits = [ind.fitness.values[0] for ind in pop]
 		#Evaluating the new population
 		leng = len(pop)
@@ -280,16 +288,23 @@ if __name__ == '__main__':
 
 	#We ran the population 'n' times. Let's see how we did:
 
-	best = min(pop, key=attrgetter("fitness"))
+	#best = min(pop, key=attrgetter("fitness"))
+	print(hof)
+	best = hof[0]
+	if (best.fitness.values[0] >= 0.5):
+		print("Gottem")
+		#return(best, False)
+
+	finalTime = time.time()
+	diffTime = finalTime - initTime
+	print("Final time = %.5f seconds"%diffTime)
 	#And let's run the algorithm to get an image
 	Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
 		best[0], best[1], best[2], best[3], best[4], best[5], best[6], 
 		best[7], best[8], best[9], best[10], best[11], best[12], 
 		best[13], best[14], best[15][0], best[15][1], best[16], 
-		best[17], best[18], best[19], 'auto', best[20], best[21])
-	)
+		best[17], best[18], best[19], 'auto', best[20], best[21]))
 
 	img = Space.runAlgo()
 	cv2.imwrite("dummy.png", img)
-
-
+	#return(best, True)
