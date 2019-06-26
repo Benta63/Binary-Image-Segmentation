@@ -5,6 +5,7 @@ from . import AlgorithmParams
 from . import AlgorithmSpace
 import cv2
 import copy
+from PIL import Image
 
 class GeneticHelp(object):
 
@@ -71,13 +72,19 @@ class GeneticHelp(object):
 		#The channel deterimines if this is a RGB or grayscale image
 		channel = False
 		if imgDim > 2: channel = True
+		#print(img1.dtype, img2.dtype)
+		img1 = np.uint8(img1)
+		#print(img1.dtype, img2.dtype)
+		assert(img1.dtype == img2.dtype)
 		#Comparing the Structual Similarity Index (SSIM) of two images
-		#ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, 
-			#multichannel=channel)
+		ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, 
+			multichannel=channel, gaussian_weights=True)
 		#Comparing the Mean Squared Error of the two image
-		mse = skimage.measure.compare_nrmse(img1, img2)
-		
-		return [mse,]
+		#print("About to compare")
+		#print(img1.shape, img2.shape, imgDim)
+		mse = skimage.measure.compare_mse(img1, img2)
+		#print("eror above?")
+		return [ssim, mse,]
 
 	'''Runs an imaging algorithm given the parameters from the 
 		population
@@ -87,6 +94,8 @@ class GeneticHelp(object):
 	individual is the parameter that we chose
 	'''
 	def runAlgo(copyImg, valImg, individual):
+		#print("Pixel: ", Image.fromarray(valImg.getImage()).getextrema())
+
 		img = copy.deepcopy(copyImg)
 		#Making an AlorithmParams object
 		params = AlgorithmParams.AlgorithmParams(img, individual[0],
@@ -133,7 +142,7 @@ class GeneticHelp(object):
 			'QS',#: Algo.runQuickShift,
 			'WS',#: Algo.runWaterShed,
 			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
-			#'AC': Algo.runMorphGeodesicActiveContour,
+			'AC',#: Algo.runMorphGeodesicActiveContour,
 			'FF'#: Algo.runFloodFill
 		}
 		#Some algorithms return masks as opposed to the full images
@@ -143,25 +152,32 @@ class GeneticHelp(object):
 		#The functions in Masks and BoolArrs will need to pass through
 		#More functions before they are ready for the fitness function
 		switcher = GrayAlgos
+
 		if (img.getDim() > 2): switcher = RGBAlgos
+
 		#If the algorithm is not right for the image, returna large 
 		#	number
-		if (params.getAlgo() not in switcher): return [1000,]
+		if (params.getAlgo() not in switcher): return [100,]
+		#if params.getAlgo() not in Masks or params.getAlgo() not in BoolArrs:
+		#	return [100,]
 		#Running the algorithm and parameters on the image
 		#func = switcher.get(params.getAlgo(), "Invalid Code")	
 		#img = func()
-
+		#print (params.getAlgo())
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
-
+		#NEED TO UNROTATE IMAGE
+		#img.save("result.png")
 		#The algorithms in Masks and BoolArrs need to be applied to the
 		#	img
 		#using runMarkBoundaries
-		if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
-			img = runAlg.runMarkBoundaries(img)
-
+		#if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
+		#	img = runAlg.runRandomWalker(img)
+		#print(img.dtype, valImg.getImage().dtype)
 		#Running the fitness function
-		evaluate = GeneticHelp.__FitnessFunction(img, 
-			valImg.getImage(), len(img.shape))
+
+		#print(params.getAlgo(), img.shape, valImg.getImage().shape)
+		evaluate = GeneticHelp.__FitnessFunction(np.array(img), 
+			valImg.getImage(), len(np.array(img).shape))
 		
 		return (evaluate)

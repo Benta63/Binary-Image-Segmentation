@@ -215,13 +215,14 @@ class RunClass(object):
 		if (best.fitness.values[0] >= 0.5):
 			return(best, False)
 		#And now let's get an image
-		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
-			best[0], best[1], best[2], best[3], best[4], best[5], best[6], 
-			best[7], best[8], best[9], best[10], best[11], best[12], 
-			best[13], best[14], best[15][0], best[15][1], best[16], 
-			best[17], best[18], best[19], 'auto', best[20], best[21]))
+		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(imgFile, 
+			best[0], best[1], best[2], best[3], best[4], best[5], 
+			best[6], best[7], best[8], best[9], best[10], best[11],
+			best[12], best[13], best[14], best[15][0], best[15][1],
+			best[16], best[17], best[18], best[19], 'auto', best[20],
+			best[21]))
+		
 		img = Space.runAlgo()
 		
 		cv2.imwrite(imgName, img)
 		return(best, True)
-		

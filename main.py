@@ -30,10 +30,10 @@ from classes.RandomHelp import RandomHelp as RandHelp
 
 
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
-VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_label'
+VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 SEED = 134
 POPULATION = 10
-GENERATIONS = 1
+GENERATIONS = 10
 
 
 if __name__ == '__main__':
@@ -65,7 +65,9 @@ if __name__ == '__main__':
 		files]
 
 	#Let's get all possible values in lists
-	Algos = ['FB','SC','WS','CV','MCV','AC'] #Need to add floods
+	Algos = ['FB', 'MCV', 'SC', 'AC', 'QS'] #Need to add floods
+	#Taking out grayscale: CV, MCV, FD
+	#Took out  'MCV', 'AC', FB, SC, CV, WS
 	#Quickshift(QS) takes a long time, so I'm taking it out for now.
 	betas = [i for i in range(0,10000)]
 	tolerance = [float(i)/1000 for i in range(0,1000,1)]
@@ -82,6 +84,7 @@ if __name__ == '__main__':
 	connectivity = [i for i in range(0, 9)] #How much a turtle likes
 	#its neighbors
 	compactness = [0.0001,0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
+	#I may want to remake compactness with list capabilities
 	mu = [float(i)/100 for i in range(0,100)]
 	#The values for Lambda1 and Lambda2 respectively
 	Lambdas = [[1,1], [1,2], [2,1]]
@@ -109,7 +112,7 @@ if __name__ == '__main__':
 	#random.seed(34)
 
 	#Minimizing fitness function
-	creator.create("FitnessMin", base.Fitness, weights=(-0.001,))
+	creator.create("FitnessMin", base.Fitness, weights=(-0.000001,-0.000001,))
 
 	creator.create("Individual", list, fitness=creator.FitnessMin)
 	
@@ -122,11 +125,10 @@ if __name__ == '__main__':
 	toolbox.register("mate", GA.skimageCrossRandom) #crossover
 	toolbox.register("evaluate", GA.runAlgo) #Fitness
 	toolbox.register("mutate", GA.mutate) #Mutation
-	toolbox.register("select", tools.selTournament, tournsize=3) 
+	toolbox.register("select", tools.selTournament, tournsize=5) 
 	#Selection
 
 	#May want to later do a different selection process
-
 	
 	#Here we register all the parameters to the toolbox
 	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
@@ -209,7 +211,6 @@ if __name__ == '__main__':
 	extractFits = [ind.fitness.values[0] for ind in pop]
 	hof.update(pop)
 
-
 	#print (pop.fitness.valid)
 	#print (pop.fitness)
 	#fitness = GA.runAlgo(AllImages[0], ValImages[0], pop[0])
@@ -217,12 +218,11 @@ if __name__ == '__main__':
 	#stats = tools.Statistics(lambda ind: ind.fitness.values)
 	#stats.register("avg", np.mean)
 
-
 	#cxpb = probability of two individuals mating
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = 0.2, 0.5, GENERATIONS
+	cxpb, mutpb, ngen = 0.5, 0.5, GENERATIONS
 	gen = 0
 
 	leng = len(pop)
@@ -232,8 +232,12 @@ if __name__ == '__main__':
 	print(" Min: ", min(extractFits))
 	print(" Max: ", max(extractFits))
 	print(" Avg: ", mean)
-	print(" Std ", stdev)
+	print(" Std: ", stdev)
+	print(" Size: ", leng )
 	#Beginning evolution
+	pastPop = pop
+	pastMean = mean
+	pastMin = min(extractFits)
 	while min(extractFits) > 0 and gen < ngen:
 		gen += 1
 		print ("Generation: ", gen)
@@ -241,22 +245,19 @@ if __name__ == '__main__':
 		offspring = list(map(toolbox.clone, offspring))
 
 		#crossover
-		#Two point crossover won't work as not all the values are the 
-		#same
 		for child1, child2 in zip(offspring[::2], offspring[1::2]):
 			#Do we crossover?
 			if random.random() < cxpb:
 				toolbox.mate(child1, child2)
 				#The parents may be okay values so we should keep them
 				#in the set
-				#del child1.fitness.values
-				#del child2.fitness.values
+				del child1.fitness.values
+				del child2.fitness.values
 		
 		#mutation
-		#Right now we don't have a working mutation function
 		for mutant in offspring:
 			if random.random() < mutpb:
-				flipProb = 0.05
+				flipProb = 0.5
 				toolbox.mutate(mutant, AllVals, flipProb)
 				del mutant.fitness.values
 
@@ -268,7 +269,6 @@ if __name__ == '__main__':
 		
 		for ind, fit in zip(invalInd, fitnesses):
 			ind.fitness.values = fit
-		print("Got the fitnesses")
 		#Replacing the old population
 		pop[:] = offspring
 		hof.update(pop)
@@ -281,30 +281,46 @@ if __name__ == '__main__':
 		print(" Min: ", min(extractFits))
 		print(" Max: ", max(extractFits))
 		print(" Avg: ", mean)
-		print(" Std ", stdev)
+		print(" Std: ", stdev)
+		print(" Size: ", leng)
+		
+		#Did we improve the population?
+		 
+		if (mean >= pastMean):
+			if min(extractFits) >= 0.0001:
+				#This population is worse than the one we had before
+				#But the minimum is small enough
+				break
+			if pastMin >= 0.0001:
+				break
+			#Here we do a forced mutation. Hopefully it works
+			#flipProb = 
+
+			break
+
+		pastPop = pop
+		pastMean = mean
+		pastMin = min(extractFits)
+
 
 		#Can use tools.Statistics for this stuff maybe?
 
-
-	#We ran the population 'n' times. Let's see how we did:
+	#We ran tpe population 'n' times. Let's see how we did:
 
 	#best = min(pop, key=attrgetter("fitness"))
-	print(hof)
 	best = hof[0]
-	if (best.fitness.values[0] >= 0.5):
-		print("Gottem")
-		#return(best, False)
-
+	#if (best.fitness.values[0] >= 0.5):
+	#	return(best, False)
+	print("Best Fitness: ", hof[0].fitness.values)
+	print(hof[0])
 	finalTime = time.time()
 	diffTime = finalTime - initTime
-	print("Final time = %.5f seconds"%diffTime)
+	print("Final time: %.5f seconds"%diffTime)
 	#And let's run the algorithm to get an image
 	Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
 		best[0], best[1], best[2], best[3], best[4], best[5], best[6], 
 		best[7], best[8], best[9], best[10], best[11], best[12], 
 		best[13], best[14], best[15][0], best[15][1], best[16], 
 		best[17], best[18], best[19], 'auto', best[20], best[21]))
-
 	img = Space.runAlgo()
 	cv2.imwrite("dummy.png", img)
-	#return(best, True)

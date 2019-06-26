@@ -128,10 +128,9 @@ if __name__=='__main__':
 	#logging.basicConfig(fomat=format, level=logging.INFO, 
 		#datefmt="%H:%M:%S")
 
-	numFiles = input("Input the total number of files of your dataset ")
+	numFiles = input("Input the total number of files in your dataset ")
 	print(numFiles)
 	processes = multiprocessing.Queue(int(numFiles))
-	print (processes.qsize())
 	p = multiprocessing.Process(target=time.sleep, args=(1000,))
 	print(multiprocessing.current_process())
 	#print(p, p.is_alive())
@@ -141,40 +140,48 @@ if __name__=='__main__':
 		p = multiprocessing.Process(target=testStuff)
 		processes.put(p,False)
 		p.start()
-		
+		print ("Size of queue: ",processes.qsize())
+
 	print(multiprocessing.active_children())
 	cursor = 0
+	print ("Possible commands are:\n\thelp -- Recreates this menu\n\t"
+		   + "")
 	while cursor < len(AllImages):
+		#First we get the correct file
+		isImg, isVal, imgFile, valFile = False, False, "", ""
+		while(isImg == False and isVal == False):
+			imgFile = input("Give the path to a image file in your dataset. ")
+			valFile = input("Give the path to the segmented image of the last file. ")
+		
+			isImg = FileClass.check_dir(imgFile)
+			isVal = FileClass.check_dir(valFile)
+			if (isImg == False):
+				print("Image file %s does not exist.\n"%imgFile)
+			if (isVal == False):
+				print("Segmentented image file %s does not exist.\n"%valFile)
+
+		print("Good files")
+
+
 		cursor += 1
 		#If it's empty, we ignore it
-		if len(line) == 0:
-			continue
+		
 		#Let's parse the line
-		parts = line.split()
 
-		command = parts[0]
+
 
 		if command == 'image':
-			imageFile = parts[1]
-			imageVal = parts[2]
-			if FileClass.check_dir(imageFile) == False:
-				print("Please enter a correct path, %s does not exist", imageFile)
-				continue
-			if FileClass.check_dir(imageVal) == False:
-				print("Please enter a correct path, %s does not exist", imageVal)
-				continue
-			#Done with error checking, let's load the images into
 			#ImageData objects
 			imageObj = ImageData.ImageData(imageFile)
 			valObj = ImageData.ImageData(imageVal)
 			#Let's write to the same image type that was read in
 			imgType = findImageType(imageFile)
 			imageName = "data\\newImage" + str(imageCounter) + imgType
-			p = multiprocessing.Process(target=RunGA, args=AllVals, 
+			p = multiprocessing.Process(target=RC.RunGA, args=[AllVals, 
 							SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT, ITER,
 							SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT, 
 				  			BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT,
-				  			imgObj,valObj, imageName)
+				  			imgObj,valObj, imageName])
 			processes.put(p, False())
 			p.start()
 			'''Algo, didWork = RunGA(AllVals, SIGMA_MIN, SIGMA_MAX, 

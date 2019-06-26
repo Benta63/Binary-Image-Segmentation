@@ -7,6 +7,9 @@ import copy
 import skimage
 from skimage import segmentation
 from itertools import combinations
+import cv2
+from . import FileClass
+from .FileClass import FileClass
 
 #from . import ImageData
 #from . import AlgorithmParams
@@ -55,10 +58,10 @@ class AlgorithmSpace(object):
 	#Code for algorithms == RW
 	#Not using RandomWalker because labels complicates the searchspace
 		
-	def __runRandomWalker(self):
+	def runRandomWalker(self, mask):
 		#Let's deterime what mode to use
 		mode = ""
-		if len(self.parameters.getImage.getImage()) < 512 :
+		if len(self.params.getImage().getImage()) < 512 :
 			mode = "cg_mg"
 		else:
 			mode = "bf"
@@ -67,10 +70,10 @@ class AlgorithmSpace(object):
 		#false
 		
 		output = skimage.segmentation.random_walker(
-			self.params.getImage().getImage(), self.params.getLabel(),
-			beta=self.params.getBeta(), mode=mode, 
+			self.params.getImage().getImage(), labels=mask,
+			beta=self.params.getBeta(), 
 			tol=self.params.getTolerance(), copy=True, 
-			multichannel=self.channel, return_full_prob=False) 
+			multichannel=True, return_full_prob=False) 
 		return output
 
 	'''
@@ -279,9 +282,14 @@ class AlgorithmSpace(object):
 	#Abbreviation for algorithm = MCV
 
 	def __runMorphChanVese(self):
+		'''print("L2: ", self.params.getLambdaTwo())
+		print("L1: ", self.params.getLambdaOne())
+		print("Smoothing: ", self.params.getSmoothing())
+		print("Init: ", self.params.getInitLvlSetMorph())
+		print("iters: ", self.params.getIters())'''
 		output = skimage.segmentation.morphological_chan_vese(
 			self.params.getImage().getImage(), 
-			iterations=self.params.getIters,
+			iterations=self.params.getIters(),
 			init_level_set=	self.params.getInitLvlSetMorph(), 
 			smoothing=self.params.getSmoothing(), 
 			lambda1=self.params.getLambdaOne(), 
@@ -324,13 +332,22 @@ class AlgorithmSpace(object):
 		gimage = skimage.segmentation.inverse_gaussian_gradient(
 			self.params.getImage().getImage(), self.params.getAlpha(), 
 			self.params.getSigma())
+		zeros = 0
+		'''print("gimage")
+		print("alpha: ", self.params.getAlpha())
+		print("sigma: ", self.params.getSigma())
+		print("image dims ", self.params.getImage().getDim())
+		print("Image shape: ", self.params.getImage().getImage().shape)
+		print("gimage shape: ", gimage.shape)
+		'''
 		output = skimage.segmentation.morphological_geodesic_active_contour(
 			gimage, self.params.getIters(), 
 			self.params.getInitLvlSetMorph(),
 			smoothing= self.params.getSmoothing(), 
 			threshold=self.params.getThresh(), balloon= 
 			self.params.getBalloon())
-
+		#print("Done")
+		#print("output shape: ", output.shape)
 		return output
 	'''
 	#flood
@@ -418,14 +435,18 @@ class AlgorithmSpace(object):
 
 	def runMarkBoundaries(self, mask):
 		output = skimage.segmentation.mark_boundaries(
-			self.params.getImage().getImage(), mask)
+			self.params.getImage().getImage(), mask, mode='inner',
+			background_label=134)
 		return output
 
-
+	def __runClearBorder(self, mask):
+		output = skimage.segmentation.clear_border(
+			labels=mask, bgval=134)
+		return output
 	#Runs the algorithm specified in params
 	def runAlgo(self):
 		switcher = {
-			'RW': self.__runRandomWalker,
+			'RW': self.runRandomWalker,
 			'FB': self.__runFelzenszwalb,
 			'SC': self.__runSlic,
 			'QS': self.__runQuickShift,
@@ -437,4 +458,29 @@ class AlgorithmSpace(object):
 			'FF': self.__runFloodFill
 		}
 		func = switcher.get(self.params.getAlgo(), "Invalid code")
+		#These algrotihms only give masks, not the whole picture
+		#print(self.params.getImage().getDim())
+		#print(self.params.getImage().getImage().shape)
+
+		if self.params.getAlgo() in ['FB', 'SC', 'QS', 'CV', 'FD']:
+			'''print("IFF")
+			#print(func().shape)
+			img = self.runRandomWalker(func())
+			print(img.shape)
+			reshapeAs = [img.shape[0], img.shape[1], 3]
+			for i in range(0, len(img)):
+				for j in range(0, len(img[i])):
+					if img[i][j] == 1:
+						img[i][j] == []
+			cv2.imwrite("dummy.png", img)
+
+
+			print(self.runRandomWalker(func()).shape, func().shape)
+			print(self.runRandomWalker(func()))
+			'''
+			#print(self.__runClearBorder(func()).shape)
+			#print(self.runMarkBoundaries(func()).shape)
+			return FileClass.convertMask(func())
+			
+			#return self.func()
 		return func()
