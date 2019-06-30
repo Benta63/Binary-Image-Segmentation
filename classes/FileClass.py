@@ -29,6 +29,7 @@ class FileClass(object):
 	def writeImage(img, fileName):
 		cv2.imwrite(fileName, img.getImage())
 
+	#Converts an image mask to a multichannel image
 	def convertMask(imgArr):
 		multiImg = np.ndarray(imgArr.shape[0] * imgArr.shape[1] * 3)
 		multiImg.shape = (imgArr.shape[0], imgArr.shape[1], 3)
@@ -37,10 +38,11 @@ class FileClass(object):
 			for wi in range(0, len(imgArr[0])):
 				#Filling in the black
 				if imgArr[le][wi] == 0 or imgArr[le][wi] == False:
-					multiImg[le][wi] = [0, 0, 0]
-				
-				else:
+					multiImg[le][wi] = [0,0,0]
+				if imgArr[le][wi] == 1 or imgArr[le][wi] == True:
 					multiImg[le][wi] = [0,0,134]
+				else:
+					multiImg[le][wi] = [0,0,0]
 
 		return multiImg
 

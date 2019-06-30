@@ -82,9 +82,12 @@ class GeneticHelp(object):
 		#Comparing the Mean Squared Error of the two image
 		#print("About to compare")
 		#print(img1.shape, img2.shape, imgDim)
-		mse = skimage.measure.compare_mse(img1, img2)
+		#mse = skimage.measure.compare_mse(img1, img2)
+		#Deleting the references to the objects and freeing memory
+		del img1
+		del img2
 		#print("eror above?")
-		return [ssim, mse,]
+		return [ssim,]
 
 	'''Runs an imaging algorithm given the parameters from the 
 		population
@@ -179,5 +182,8 @@ class GeneticHelp(object):
 		#print(params.getAlgo(), img.shape, valImg.getImage().shape)
 		evaluate = GeneticHelp.__FitnessFunction(np.array(img), 
 			valImg.getImage(), len(np.array(img).shape))
+		#Explicitely freeing memory
+		del img
+		del valImg
 		
 		return (evaluate)

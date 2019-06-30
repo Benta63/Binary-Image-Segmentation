@@ -14,7 +14,7 @@ from deap import tools
 from skimage import segmentation
 import cv2
 import time
-
+import gc
 
 from classes import ImageData
 from classes import AlgorithmSpace
@@ -109,10 +109,9 @@ if __name__ == '__main__':
 	#https://deap.readthedocs.io/en/master/api/tools.html
 	#Creator factory builds new classes
 
-	#random.seed(34)
 
 	#Minimizing fitness function
-	creator.create("FitnessMin", base.Fitness, weights=(-0.000001,-0.000001,))
+	creator.create("FitnessMin", base.Fitness, weights=(-0.000001,))
 
 	creator.create("Individual", list, fitness=creator.FitnessMin)
 	
@@ -127,7 +126,6 @@ if __name__ == '__main__':
 	toolbox.register("mutate", GA.mutate) #Mutation
 	toolbox.register("select", tools.selTournament, tournsize=5) 
 	#Selection
-
 	#May want to later do a different selection process
 	
 	#Here we register all the parameters to the toolbox
@@ -167,9 +165,9 @@ if __name__ == '__main__':
 	#Should be from -1 to 1, but can be any value
 	toolbox.register("attr_balloon", RandHelp.weighted_choice, balloon, 
 		BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT)
-	#Need to register a random seed_point and a correct new_value
 	
-	#tools.initCycle
+	#Need to register a random seed_point and a correct new_value for floods
+	
 	#Container: data type
 	#func_seq: List of function objects to be called in order to fill 
 	#container
@@ -210,11 +208,8 @@ if __name__ == '__main__':
 	#Algo = AlgorithmSpace(AlgoParams)
 	extractFits = [ind.fitness.values[0] for ind in pop]
 	hof.update(pop)
+	gc.collect()
 
-	#print (pop.fitness.valid)
-	#print (pop.fitness)
-	#fitness = GA.runAlgo(AllImages[0], ValImages[0], pop[0])
-	#hof = tools.HallOfFame(1)
 	#stats = tools.Statistics(lambda ind: ind.fitness.values)
 	#stats.register("avg", np.mean)
 
@@ -283,39 +278,33 @@ if __name__ == '__main__':
 		print(" Avg: ", mean)
 		print(" Std: ", stdev)
 		print(" Size: ", leng)
-		
+		gc.collect()
 		#Did we improve the population?
-		 
-		if (mean >= pastMean):
-			if min(extractFits) >= 0.0001:
-				#This population is worse than the one we had before
-				#But the minimum is small enough
-				break
-			if pastMin >= 0.0001:
-				break
-			#Here we do a forced mutation. Hopefully it works
-			#flipProb = 
-
-			break
-
 		pastPop = pop
 		pastMean = mean
 		pastMin = min(extractFits)
+		if (mean >= pastMean):
+			#This population is worse than the one we had before
 
+			if hof[0].fitness.values[0] <= 0.0001:
+				#The best fitness function is pretty good
+				break
+			else:
+				continue
 
 		#Can use tools.Statistics for this stuff maybe?
 
-	#We ran tpe population 'n' times. Let's see how we did:
+	#We ran the population 'ngen' times. Let's see how we did:
 
-	#best = min(pop, key=attrgetter("fitness"))
 	best = hof[0]
-	#if (best.fitness.values[0] >= 0.5):
-	#	return(best, False)
+	
 	print("Best Fitness: ", hof[0].fitness.values)
 	print(hof[0])
+
 	finalTime = time.time()
 	diffTime = finalTime - initTime
 	print("Final time: %.5f seconds"%diffTime)
+
 	#And let's run the algorithm to get an image
 	Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(AllImages[0], 
 		best[0], best[1], best[2], best[3], best[4], best[5], best[6], 

@@ -106,7 +106,6 @@ if __name__=='__main__':
 			  alphas, balloon]
 
 
-	print("Before Loop")
 
 	#Here we register all the parameters to the toolbox
 	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	

@@ -20,20 +20,81 @@ from . import GeneticHelp as GA
 from . import ImageData
 from . import FileClass
 '''
+from classes import FileClass
+from classes.FileClass import FileClass
+from classes import GeneticHelp
+from classes.GeneticHelp import GeneticHelp as GA
+from classes import ImageData
+from classes.ImageData import ImageData
 
 IMAGE_PATH = '..\\Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = '..\\Image_data\\Coco_2017_unlabeled\\rgbd_label'
+#Image should be an input
 SEED = 134
 POPULATION = 10
 GENERATIONS = 10
 
 class RunClass(object):
-	def FindBest(self, population):
-		return min(population, key=attrgetter("fitness"))
+	def __init__(self, imgPath, initImage, initValid):
+		#We should do error checking in main, but let's do it again
+		if (FileClass.check_dir(imgPath) == False):
+			print ('ERROR: Directory \"%s\" does not exist'%IMAGE_PATH)
+			sys.exit(1)
+		#Getting all of the images in a manageable way	
+		AllImages = [ImageData.ImageData(os.path.join(root, name)) for 
+			root, dirs, files in os.walk(IMAGE_PATH) for name in files]
+		self.ImgPath = AllImages
+		self.Images = [ImageData.ImageData(initImage)]
+		self.Validation = [ImageData.ImageData(initValid)]
 
-	def RunGA(self, AllParams, SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT, ITER
-			 ,SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT, BALLOON_MIN, 
-			 BALLOON_MAX, BALLOON_WEIGHT, imgFile, valFile, imgName):
+
+	#Finds the best algorithm for the specified image
+	def RunGA(self):
+
+		#Let's get all possible values in lists
+		Algos = ['FB','SC','WS','CV','MCV','AC'] #Need to add floods
+		#Quickshift(QS) takes a long time, so I'm taking it out for now.
+		betas = [i for i in range(0,10000)]
+		tolerance = [float(i)/1000 for i in range(0,1000,1)]
+		scale = [i for i in range(0,10000)]
+		sigma = [float(i)/100 for i in range(0,10,1)]
+		#Sigma should be weighted more from 0-1
+		min_size = [i for i in range(0,10000)]
+		n_segments = [i for i in range(2,10000)]
+		iterations = [10, 10]
+		ratio = [float(i)/100 for i in range(0,100)]
+		kernel = [i for i in range(0,10000)]
+		max_dists = [i for i in range(0,10000)]
+		random_seed = [134]
+		connectivity = [i for i in range(0, 9)] #How much a turtle likes
+		#its neighbors
+		compactness = [0.0001,0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
+		mu = [float(i)/100 for i in range(0,100)]
+		#The values for Lambda1 and Lambda2 respectively
+		Lambdas = [[1,1], [1,2], [2,1]]
+		dt = [float(i)/10 for i in range(0,100)]
+		init_level_set_chan = ['checkerboard', 'disk', 'small disk']
+		init_level_set_morph = ['checkerboard', 'circle']
+		#Should weight 1-4 higher
+		smoothing = [i for i in range(1, 10)]
+		alphas = [i for i in range(0,10000)]
+		#Should weight values -1, 0 and 1 higher
+		balloon = [i for i in range(-50,50)]
+		#For flood and flood_fill, which I will add later
+		seed_point = [] #x,y,z coordinate
+		new_value = ""
+		AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
+				  n_segments, compactness, iterations, ratio, kernel, 
+				  max_dists, random_seed, connectivity, mu, Lambdas, dt,
+				  init_level_set_chan, init_level_set_morph, smoothing,
+				  alphas, balloon]
+
+
+		#Here we register all the parameters to the toolbox
+		SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
+		ITER = 10
+		SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT = 1, 4, 0.5
+		BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT = -1, 1, 0.9
 
 		#Minimizing fitness function
 		creator.create("FitnessMin", base.Fitness, weights=(minFit,))
@@ -116,8 +177,8 @@ class RunClass(object):
 		pop = toolbox.population()
 		
 		#We're only looking at one image for now	
-		Images = [imgFile for i in range(0, len(pop))]
-		ValImages = [valFile for i in range(0, len(pop))]
+		Images = [self.Images[0] for i in range(0, len(pop))]
+		ValImages = [self.Validation[0] for i in range(0, len(pop))]
 
 		#Evaluating the initial fitnesses
 		fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
@@ -186,7 +247,8 @@ class RunClass(object):
 			for ind, fit in zip(invalInd, fitnesses):
 				ind.fitness.values = fit
 
-			#Replacing the old population
+			#Replacing the old 
+			hof.update(pop)
 			pop[:] = offspring
 
 			#Evaluating the new population
@@ -200,8 +262,8 @@ class RunClass(object):
 			print(" Max: ", max(extractFits))
 			print(" Avg: ", mean)
 			print(" Std ", stdev)
-			best = self.FindBest(pop)
-			if best < 0.2:
+
+			if hof[0].fitness.values[0] < 0.0001:
 				#This implementations should be good enough
 				return(best, True)
 
@@ -212,7 +274,7 @@ class RunClass(object):
 		#Let's now find the 'best algorithm
 		#best = self.FindBest(pop)
 		best = hof[0]
-		if (best.fitness.values[0] >= 0.5):
+		if (best.fitness.values[0] >= 0.0001):
 			return(best, False)
 		#And now let's get an image
 		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(imgFile, 
@@ -226,3 +288,18 @@ class RunClass(object):
 		
 		cv2.imwrite(imgName, img)
 		return(best, True)
+
+	#Tests an algorithm on an image based on the SSIM
+	#algoParams gives all the algorithm and all the parameters for said
+		#algorithm
+	def runAlgoOnImage(self, algoParams, img, valImg):
+		Space = AlgorithmSpace(AlgorithmParams.AlgorithmParams(img,
+			algoParams[0], algoParams[1], algoParams[2], algoParams[3],
+			algoParams[4], algoParams[5], algoParams[6], algoParams[7],
+			algoParams[8], algoParams[9], algoParams[10],
+			algoParams[12], algoParams[13], algoParams[14],
+			algoParams[15][0], algoParams[15][1], algoParams[16],
+			algoParams[17], algoParams[18], algoParams[19], 'auto',
+			algoParams[20], algoParams[21]))
+		newImg = Space.runAlgo()
+
