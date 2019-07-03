@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	counter = 0
 	for image in AllImages:
 		colored = Image.open(image)
-		gray = colored.convert('L')
+		gray = colored.convert('L')sa
 		bw = gray.point(lambda x: 0 if x < 150 else 255, '1')
 
 		imgName = OUT_PATH + "\\" + AllNames[counter].strip(".png") +str(counter) + ".png"

@@ -108,7 +108,7 @@ class GeneticHelp(object):
 			individual[12], individual[13], individual[14], 
 			individual[15][0],individual[15][1], individual[16],
 			individual[17], individual[18], individual[19], 'auto',
-			individual[20], individual[21])
+			individual[20], individual[21], individual[22])
 
 
 		Algo = AlgorithmSpace.AlgorithmSpace(params)

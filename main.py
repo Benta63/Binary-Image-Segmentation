@@ -12,6 +12,7 @@ from deap import base
 from deap import creator
 from deap import tools
 from skimage import segmentation
+import scoop
 import cv2
 import time
 import gc
@@ -32,7 +33,7 @@ from classes.RandomHelp import RandomHelp as RandHelp
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 SEED = 134
-POPULATION = 10
+POPULATION = 1000
 GENERATIONS = 10
 
 
@@ -65,7 +66,7 @@ if __name__ == '__main__':
 		files]
 
 	#Let's get all possible values in lists
-	Algos = ['FB', 'MCV', 'SC', 'AC', 'QS'] #Need to add floods
+	Algos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS'] #Need to add floods
 	#Taking out grayscale: CV, MCV, FD
 	#Took out  'MCV', 'AC', FB, SC, CV, WS
 	#Quickshift(QS) takes a long time, so I'm taking it out for now.
@@ -97,13 +98,24 @@ if __name__ == '__main__':
 	#Should weight values -1, 0 and 1 higher
 	balloon = [i for i in range(-50,50)]
 	#For flood and flood_fill, which I will add later
-	seed_point = [] #x,y,z coordinate
-	new_value = ""
+	#For the seed point, we need to get the dimensions of the image
+	#For now, we will assume that all images are the same dimensions
+	
+	x = AllImages[0].getShape()[0]
+	y = AllImages[0].getShape()[1]
+	z = 0
+	if (AllImages[0].getDim() > 2):
+		z = AllImages[0].getShape()[2]
+
+	seedX = [ix for ix in range(0, x)]
+	seedY = [iy for iy in range(0, y)]
+	seedZ = [iz for iz in range(0, z)]
+
 	AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
 			  n_segments, compactness, iterations, ratio, kernel, 
 			  max_dists, random_seed, connectivity, mu, Lambdas, dt,
 			  init_level_set_chan, init_level_set_morph, smoothing,
-			  alphas, balloon]
+			  alphas, balloon, seedX, seedY, seedZ]
 
 	#Using the DEAP genetic algorithm to make One Max
 	#https://deap.readthedocs.io/en/master/api/tools.html
@@ -124,7 +136,8 @@ if __name__ == '__main__':
 	toolbox.register("mate", GA.skimageCrossRandom) #crossover
 	toolbox.register("evaluate", GA.runAlgo) #Fitness
 	toolbox.register("mutate", GA.mutate) #Mutation
-	toolbox.register("select", tools.selTournament, tournsize=5) 
+	toolbox.register("select", tools.selTournament, tournsize=5)
+	
 	#Selection
 	#May want to later do a different selection process
 	
@@ -166,8 +179,10 @@ if __name__ == '__main__':
 	toolbox.register("attr_balloon", RandHelp.weighted_choice, balloon, 
 		BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT)
 	
-	#Need to register a random seed_point and a correct new_value for floods
-	
+	#Need to register a random seed_point
+	toolbox.register("attr_seed_pointX", random.choice, seedX)
+	toolbox.register("attr_seed_pointY", random.choice, seedY)
+	toolbox.register("attr_seed_pointZ", random.choice, seedZ)
 	#Container: data type
 	#func_seq: List of function objects to be called in order to fill 
 	#container
@@ -182,7 +197,9 @@ if __name__ == '__main__':
 		toolbox.attr_connect, toolbox.attr_mu, 
 		toolbox.attr_lambda, toolbox.attr_dt, toolbox.attr_init_chan,
 		toolbox.attr_init_morph, toolbox.attr_smooth, 
-		toolbox.attr_alphas, toolbox.attr_balloon]
+		toolbox.attr_alphas, toolbox.attr_balloon, 
+		toolbox.attr_seed_pointX, toolbox.attr_seed_pointY,
+		toolbox.attr_seed_pointZ]
 	
 	#Here we populate our individual with all of the parameters
 	toolbox.register("individual", tools.initCycle, creator.Individual
@@ -208,7 +225,7 @@ if __name__ == '__main__':
 	#Algo = AlgorithmSpace(AlgoParams)
 	extractFits = [ind.fitness.values[0] for ind in pop]
 	hof.update(pop)
-	gc.collect()
+	#gc.collect()
 
 	#stats = tools.Statistics(lambda ind: ind.fitness.values)
 	#stats.register("avg", np.mean)
@@ -233,7 +250,10 @@ if __name__ == '__main__':
 	pastPop = pop
 	pastMean = mean
 	pastMin = min(extractFits)
-	while min(extractFits) > 0 and gen < ngen:
+
+	#while min(extractFits) > 0 and gen < ngen:
+	while gen < ngen:
+
 		gen += 1
 		print ("Generation: ", gen)
 		offspring = toolbox.select(pop, len(pop))
@@ -283,7 +303,7 @@ if __name__ == '__main__':
 		pastPop = pop
 		pastMean = mean
 		pastMin = min(extractFits)
-		if (mean >= pastMean):
+		'''if (mean >= pastMean):
 			#This population is worse than the one we had before
 
 			if hof[0].fitness.values[0] <= 0.0001:
@@ -291,9 +311,10 @@ if __name__ == '__main__':
 				break
 			else:
 				continue
-
+		'''
 		#Can use tools.Statistics for this stuff maybe?
 
+	
 	#We ran the population 'ngen' times. Let's see how we did:
 
 	best = hof[0]
@@ -310,6 +331,7 @@ if __name__ == '__main__':
 		best[0], best[1], best[2], best[3], best[4], best[5], best[6], 
 		best[7], best[8], best[9], best[10], best[11], best[12], 
 		best[13], best[14], best[15][0], best[15][1], best[16], 
-		best[17], best[18], best[19], 'auto', best[20], best[21]))
+		best[17], best[18], best[19], 'auto', best[20], best[21], 
+		best[22]))
 	img = Space.runAlgo()
 	cv2.imwrite("dummy.png", img)

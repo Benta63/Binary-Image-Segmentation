@@ -11,8 +11,8 @@ class AlgorithmParams(object):
 		iters=10, ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, 
 		connectivity=1, mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0,
 		init_level_set_chan=None, init_level_set_morph=None,smoothing=1,
-		threshold='auto', alpha=0.0, balloon=0.0, seed_point=[], 
-		new_value=""):
+		threshold='auto', alpha=0.0, balloon=0.0, seed_pointX=0, 
+		seed_pointY=0, seed_pointZ=0):
 
 		#img is an ImageData object
 		self.Image = img #The image, usually an ImageData object
@@ -55,9 +55,10 @@ class AlgorithmParams(object):
 		self.alpha = alpha #A parameter for inverse_guassian_gradient
 		self.balloon = balloon #A parameter for
 			#morphological_geodesic_active_contour
-		self.seed_point = seed_point #A parameter for flood and 
+		self.seed_pointX = seed_pointX #A parameter for flood and 
 		#flood_fill
-		self.new_value = new_value #A parametr for flood_fill
+		self.seed_pointY = seed_pointY
+		self.seed_pointZ = seed_pointZ
 
 
 	#Accessors
@@ -87,8 +88,8 @@ class AlgorithmParams(object):
 	def getAlpha(self): return self.alpha
 	def getSmoothing(self): return self.smoothing
 	def getBalloon(self): return self.balloon
-	def getSeedPoint(self): return self.seed_point
-	def getNewVal(self): return self.new_value
+	def getSeedPoint(self): return (self.seed_pointX, self.seed_pointY, self.seed_pointZ)
+
 
 	#Modifiers
 	def changeImage(self, newImg):
@@ -150,6 +151,6 @@ class AlgorithmParams(object):
 	def changeBalloon(self, balloon):
 		self.balloon = balloon
 	def changeSeedPoint(self, seedPt):
-		self.seed_point = seedPt
-	def changeNewVal(self, newVal):
-		self.new_value = newVal
+		self.seed_pointX = seedPt[0]
+		self.seed_pointY = seedPt[1]
+		self.seed_pointZ = seedPt[2]
