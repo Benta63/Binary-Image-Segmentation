@@ -48,13 +48,44 @@ class GeneticHelp(object):
 			It is computed seperately for each value. 
 	'''
 	def mutate(copyChild, posVals, flipProb = 0.5):
+
 		#Just because we chose to mutate a value doesn't mean we mutate
 		#Every aspect of the value	
 		child = copy.deepcopy(copyChild)
-		for index in range(0, len(child)):
+
+		#Not every algorithm is associated with every value
+		#Let's first see if we change the algorithm
+		randVal = random.random()
+		if randVal < flipProb:
+			#Let's mutate
+			child[0] = random.choice(posVals[0])
+		#Now let's get the indexes (parameters) related to that value
+		switcher = {
+			'RW': [1, 2],
+			'FB': [3, 4, 5],
+			'SC': [6, 7, 8, 4, ],
+			'QS': [9, 10, 11, 12],
+			'WS': [7],
+			'CV': [13, 14, 2, 8, 15, 16],
+			'MCV': [8, 17, 18, 14],
+			'AC': [20, 4,  18, 19, 21],
+			'FD': [22, 13, 2, ], 
+			#Note, index 22 is the seed point. Will have to used diff possible values
+			'FF': [22, 13, 2]
+		}
+		indexes = switcher.get(child[0])
+
+		for index in indexes:
 			randVal = random.random()
 			if randVal < flipProb:
 				#Then we mutate said value
+				if index == 22:
+					#Do some special shit
+					X = random.choice(posVals[22])
+					Y = random.choice(posVals[23])
+					Z = random.choice(posVals[24])
+					child[index] = (X, Y, Z)
+					continue
 
 				child[index] = random.choice(posVals[index])
 		return child		
@@ -87,7 +118,7 @@ class GeneticHelp(object):
 		del img1
 		del img2
 		#print("eror above?")
-		return [ssim,]
+		return [abs(ssim),]
 
 	'''Runs an imaging algorithm given the parameters from the 
 		population
@@ -97,7 +128,6 @@ class GeneticHelp(object):
 	individual is the parameter that we chose
 	'''
 	def runAlgo(copyImg, valImg, individual):
-		#print("Pixel: ", Image.fromarray(valImg.getImage()).getextrema())
 
 		img = copy.deepcopy(copyImg)
 		#Making an AlorithmParams object
@@ -108,7 +138,9 @@ class GeneticHelp(object):
 			individual[12], individual[13], individual[14], 
 			individual[15][0],individual[15][1], individual[16],
 			individual[17], individual[18], individual[19], 'auto',
-			individual[20], individual[21], individual[22])
+			individual[20], individual[21], individual[22], 
+			individual[23], individual[24])
+
 
 
 		Algo = AlgorithmSpace.AlgorithmSpace(params)

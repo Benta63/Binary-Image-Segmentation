@@ -29,7 +29,7 @@ class AlgorithmSpace(object):
 		if (self.params.getImage().getDim() > 2):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
-		self.newVal = 255
+		self.newVal = 134
 	
 
 	#Algorithms
@@ -373,8 +373,7 @@ class AlgorithmSpace(object):
 	def __runFlood(self):
 		output = skimage.segmentation.flood(
 			self.params.getImage().getImage(),
-			self.params.getSeedPoint(), selem=
-			self.params.getTolerance(), connectivity=
+			self.params.getSeedPoint(), connectivity=
 			self.params.getConnect(), tolerance=
 			self.params.getTolerance())
 		return output

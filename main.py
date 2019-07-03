@@ -13,6 +13,7 @@ from deap import creator
 from deap import tools
 from skimage import segmentation
 import scoop
+from scoop import futures
 import cv2
 import time
 import gc
@@ -33,7 +34,7 @@ from classes.RandomHelp import RandomHelp as RandHelp
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 SEED = 134
-POPULATION = 1000
+POPULATION = 100
 GENERATIONS = 10
 
 
@@ -105,11 +106,11 @@ if __name__ == '__main__':
 	y = AllImages[0].getShape()[1]
 	z = 0
 	if (AllImages[0].getDim() > 2):
-		z = AllImages[0].getShape()[2]
+		z = AllImages[0].getShape()[2] -1
 
 	seedX = [ix for ix in range(0, x)]
 	seedY = [iy for iy in range(0, y)]
-	seedZ = [iz for iz in range(0, z)]
+	seedZ = [z]
 
 	AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
 			  n_segments, compactness, iterations, ratio, kernel, 
@@ -136,9 +137,8 @@ if __name__ == '__main__':
 	toolbox.register("mate", GA.skimageCrossRandom) #crossover
 	toolbox.register("evaluate", GA.runAlgo) #Fitness
 	toolbox.register("mutate", GA.mutate) #Mutation
-	toolbox.register("select", tools.selTournament, tournsize=5)
-	
-	#Selection
+	toolbox.register("select", tools.selTournament, tournsize=5) #Selection
+	toolbox.register("map", futures.map) #So that we can use scoop
 	#May want to later do a different selection process
 	
 	#Here we register all the parameters to the toolbox
@@ -298,6 +298,7 @@ if __name__ == '__main__':
 		print(" Avg: ", mean)
 		print(" Std: ", stdev)
 		print(" Size: ", leng)
+		print(" Time: ", time.time() - initTime)
 		gc.collect()
 		#Did we improve the population?
 		pastPop = pop
@@ -332,6 +333,6 @@ if __name__ == '__main__':
 		best[7], best[8], best[9], best[10], best[11], best[12], 
 		best[13], best[14], best[15][0], best[15][1], best[16], 
 		best[17], best[18], best[19], 'auto', best[20], best[21], 
-		best[22]))
+		best[22], best[23], best[24]))
 	img = Space.runAlgo()
 	cv2.imwrite("dummy.png", img)
