@@ -6,19 +6,20 @@ A project by Noah Stolz under Dr. Dirk Colbry of Michigan State University's Com
 Image segmentation is usually a time-consuming process. Usually, a researcher needs to manually segment all of their images. This project aims to use genetic algorithms for image segmentation and aims to save researchers time.
 
 ## Dependencies
-* python 3.6.3 
+* python 3.5.3 
   * conda 4.6.14
 * numpy 1.13.3
 * scikit-image 0.15.0
 * skimage.segmentation
 * deap 1.2.2
+* pillow
 * random 
 * math
 * copy
 
 ## Todo
-* Fix AC algorithm
-* Finish commenting everything
+* Fix Flood_Fill Algorithm
+* Make Crossover/Mutation only crossover/mutate values associated with algorithm chosen
 
 ## Notes
 * May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
