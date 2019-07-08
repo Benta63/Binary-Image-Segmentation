@@ -71,17 +71,17 @@ if __name__ == '__main__':
 	#Taking out grayscale: CV, MCV, FD
 	#Took out  'MCV', 'AC', FB, SC, CV, WS
 	#Quickshift(QS) takes a long time, so I'm taking it out for now.
-	betas = [i for i in range(0,10000)]
+	betas = [i for i in range(0,1000)]
 	tolerance = [float(i)/1000 for i in range(0,1000,1)]
-	scale = [i for i in range(0,10000)]
+	scale = [i for i in range(0,1000)]
 	sigma = [float(i)/100 for i in range(0,10,1)]
 	#Sigma should be weighted more from 0-1
-	min_size = [i for i in range(0,10000)]
-	n_segments = [i for i in range(2,10000)]
+	min_size = [i for i in range(0,1000)]
+	n_segments = [i for i in range(2,1000)]
 	iterations = [10, 10]
 	ratio = [float(i)/100 for i in range(0,100)]
-	kernel = [i for i in range(0,10000)]
-	max_dists = [i for i in range(0,10000)]
+	kernel = [i for i in range(0,1000)]
+	max_dists = [i for i in range(0,1000)]
 	random_seed = [134]
 	connectivity = [i for i in range(0, 9)] #How much a turtle likes
 	#its neighbors
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 	init_level_set_morph = ['checkerboard', 'circle']
 	#Should weight 1-4 higher
 	smoothing = [i for i in range(1, 10)]
-	alphas = [i for i in range(0,10000)]
+	alphas = [i for i in range(0,1000)]
 	#Should weight values -1, 0 and 1 higher
 	balloon = [i for i in range(-50,50)]
 	#For flood and flood_fill, which I will add later
@@ -304,7 +304,7 @@ if __name__ == '__main__':
 		pastPop = pop
 		pastMean = mean
 		pastMin = min(extractFits)
-		'''if (mean >= pastMean):
+		if (mean >= pastMean):
 			#This population is worse than the one we had before
 
 			if hof[0].fitness.values[0] <= 0.0001:
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 				break
 			else:
 				continue
-		'''
+		
 		#Can use tools.Statistics for this stuff maybe?
 
 	
