@@ -9,20 +9,7 @@ IMAGE_PATH = "Image_data\\Coco_2017_unlabeled\\rgbd_label"
 OUT_PATH = "Image_data\\Coco_2017_unlabeled\\rgbd_new_label"
 if __name__ == '__main__':
 	
-
-	picture = Image.open(IMAGE, mode='r')
-	width = picture.width
-	height = picture.height
-	print(picture.getpixel((0,0)))	
-	for x in range (0, width):
-		for y in range (0, height):
-			pixel = picture.getpixel((x, y))
-			if pixel[0] == 0 and pixel[1] == 0 and pixel[2] == 0:
-				continue
-			else:
-				picture.putpixel((x, y), 134)
-
-	picture.save("testIm.png")
+	#Puts all of the paths to the images to 
 	AllImages = [os.path.join(root, name) for 
 		root, dirs, files in os.walk(IMAGE_PATH) for name in files]
 	AllNames = [name for root, dirs, files in os.walk(IMAGE_PATH) 
@@ -40,8 +27,8 @@ if __name__ == '__main__':
 					continue
 				else:
 					picture.putpixel((x, y), 134)
-		imgName = OUT_PATH + "\\" + AllNames[counter].strip(".png") + 
-			str(counter) + ".png"
+		picture.convert(mode='L')
+		imgName = OUT_PATH + "\\" + AllNames[counter].strip(".png") + str(counter) + ".png"
 		print(imgName)
 		picture.save(imgName)
 
