@@ -19,7 +19,6 @@ Image segmentation is usually a time-consuming process. Usually, a researcher ne
 
 ## Todo
 * Fix Flood_Fill Algorithm
-* Make Crossover/Mutation only crossover/mutate values associated with algorithm chosen
 
 ## Notes
 * May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
