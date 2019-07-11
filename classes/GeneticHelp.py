@@ -193,25 +193,16 @@ class GeneticHelp(object):
 		#If the algorithm is not right for the image, returna large 
 		#	number
 		if (params.getAlgo() not in switcher): return [100,]
-		#if params.getAlgo() not in Masks or params.getAlgo() not in BoolArrs:
-		#	return [100,]
+		
 		#Running the algorithm and parameters on the image
-		#func = switcher.get(params.getAlgo(), "Invalid Code")	
-		#img = func()
-		#print (params.getAlgo())
+	
 		runAlg = AlgorithmSpace.AlgorithmSpace(params)
 		img = runAlg.runAlgo()
-		#NEED TO UNROTATE IMAGE
-		#img.save("result.png")
-		#The algorithms in Masks and BoolArrs need to be applied to the
+				#The algorithms in Masks and BoolArrs need to be applied to the
 		#	img
-		#using runMarkBoundaries
-		#if  params.getAlgo() in Masks or params.getAlgo() in BoolArrs:
-		#	img = runAlg.runRandomWalker(img)
-		#print(img.dtype, valImg.getImage().dtype)
+	
 		#Running the fitness function
 
-		#print(params.getAlgo(), img.shape, valImg.getImage().shape)
 		evaluate = GeneticHelp.__FitnessFunction(np.array(img), 
 			valImg.getImage(), len(np.array(img).shape))
 		#Explicitely freeing memory
