@@ -16,7 +16,6 @@ import scoop
 from scoop import futures
 import cv2
 import time
-import gc
 
 from classes import ImageData
 from classes import AlgorithmSpace
@@ -34,7 +33,7 @@ from classes.RandomHelp import RandomHelp as RandHelp
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 SEED = 134
-POPULATION = 100
+POPULATION = 10
 GENERATIONS = 10
 
 
@@ -42,9 +41,9 @@ if __name__ == '__main__':
 	initTime = time.time()
 	#To determine the seed for debugging purposes
 	seed = random.randrange(sys.maxsize)
+	#seed = SEED
 	rng = random.Random(seed)
 	print("Seed was:", seed)
-	#seed = SEED
 
 	#Will later have user input to find where the images are
 
@@ -98,12 +97,14 @@ if __name__ == '__main__':
 	alphas = [i for i in range(0,1000)]
 	#Should weight values -1, 0 and 1 higher
 	balloon = [i for i in range(-50,50)]
-	#For flood and flood_fill, which I will add later
-	#For the seed point, we need to get the dimensions of the image
-	#For now, we will assume that all images are the same dimensions
 	
+	#Getting the seedpoint for floodfill
+
+	#Dimensions of the imag
 	x = AllImages[0].getShape()[0]
 	y = AllImages[0].getShape()[1]
+
+	#Multichannel?
 	z = 0
 	if (AllImages[0].getDim() > 2):
 		z = AllImages[0].getShape()[2] -1
@@ -225,7 +226,6 @@ if __name__ == '__main__':
 	#Algo = AlgorithmSpace(AlgoParams)
 	extractFits = [ind.fitness.values[0] for ind in pop]
 	hof.update(pop)
-	#gc.collect()
 
 	#stats = tools.Statistics(lambda ind: ind.fitness.values)
 	#stats.register("avg", np.mean)
@@ -284,6 +284,7 @@ if __name__ == '__main__':
 		
 		for ind, fit in zip(invalInd, fitnesses):
 			ind.fitness.values = fit
+
 		#Replacing the old population
 		pop[:] = offspring
 		hof.update(pop)
@@ -299,7 +300,6 @@ if __name__ == '__main__':
 		print(" Std: ", stdev)
 		print(" Size: ", leng)
 		print(" Time: ", time.time() - initTime)
-		gc.collect()
 		#Did we improve the population?
 		pastPop = pop
 		pastMean = mean
@@ -313,9 +313,9 @@ if __name__ == '__main__':
 			else:
 				continue
 		
-		#Can use tools.Statistics for this stuff maybe?
+		#TODO: use tools.Statistics for this stuff
 
-	
+		
 	#We ran the population 'ngen' times. Let's see how we did:
 
 	best = hof[0]
