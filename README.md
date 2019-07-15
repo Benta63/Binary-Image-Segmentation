@@ -23,7 +23,7 @@ First install all of the necessary packages.
   * https://scoop.readthedocs.io/en/0.7/install.html
 * pillow 6.0.0
   * https://anaconda.org/anaconda/pillow
-* pandas 0.20.3
+* pandas 0.24.2
   * https://pandas.pydata.org/pandas-docs/version/0.23.3/install.html
 * random 
 * math
