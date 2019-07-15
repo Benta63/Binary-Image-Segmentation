@@ -39,6 +39,9 @@ MUTATION = .5
 FLIPPROB = 0.06
 CROSSOVER = 0.14
 
+
+
+
 if __name__ == '__main__':
 	initTime = time.time()
 	#To determine the seed for debugging purposes
@@ -236,7 +239,7 @@ if __name__ == '__main__':
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = CROSSOVER, MUTATION, GENERATIONS
+	cxpb, mutpb, ngen = 0.5, 0.5, GENERATIONS
 	gen = 0
 
 	leng = len(pop)
@@ -274,7 +277,7 @@ if __name__ == '__main__':
 		#mutation
 		for mutant in offspring:
 			if random.random() < mutpb:
-				flipProb = FLIPPROB
+				flipProb = 0.5
 				toolbox.mutate(mutant, AllVals, flipProb)
 				del mutant.fitness.values
 
