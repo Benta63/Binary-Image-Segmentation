@@ -36,4 +36,5 @@ For additional commands in scoop, refer to https://scoop.readthedocs.io/en/0.7/u
 * May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
 * LabelOne changes already labeled images to binary.
   * Useful if the images are labeled with more than two colors
+* May have to clone scikit-image from git, as regular installation installs 0.14 and does not include flood_fill
   
