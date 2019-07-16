@@ -1,10 +1,3 @@
-#TODO: MAJOR: Make simple to add algorithms AND Seed search space
-#EMPHASIZE: We knew that it would not converge. good first step. future work is cool. What are bad numbers
-#Takeaways: built framework, validated frame, verified hypothesis (it didn't work), attempted scaling.
-#Comment in readme about pillow using 3.5.3. Can change pillow to matplotlib.
-#Add to Tasks?? about changeing pillow to matplotlib
-#Talk about finding baseline. "Dr. Colbry says that this is a complete success"
-
 import numpy as np
 import os
 from PIL import Image
@@ -23,7 +16,7 @@ import scoop
 from scoop import futures
 import cv2
 import time
-#TODO: Change folder name to not classes 
+
 from classes import ImageData
 from classes import AlgorithmSpace
 from classes.AlgorithmSpace import AlgorithmSpace
@@ -36,24 +29,24 @@ from classes.GeneticHelp import GeneticHelp as GA
 from classes import RandomHelp
 from classes.RandomHelp import RandomHelp as RandHelp
 
-#TODO: Make input params changeable by input arguments
-IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 
-#TODO: Change validation to ground_truth
+IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
-SEED = random.randrange(sys.maxsize)
-POPULATION = 10
-GENERATIONS = 10
-MUTATION = .5
-FLIPPROB = 0.06
-CROSSOVER = 0.14
+SEED = 134
+POPULATION = 134
+GENERATIONS = 124
+MUTATION = 0.66
+FLIPPROB = 0.55
+
+
 
 if __name__ == '__main__':
 	initTime = time.time()
 	#To determine the seed for debugging purposes
+	seed = random.randrange(sys.maxsize)
 	#seed = SEED
-	rng = random.Random(SEED)
-	print("Seed was:", SEED)
+	rng = random.Random(seed)
+	print("Seed was:", seed)
 
 	#Will later have user input to find where the images are
 
@@ -66,8 +59,6 @@ if __name__ == '__main__':
 		print("ERROR: Directory \"%s\" does not exist"%VALIDATION_PATH)
 		sys.exit(1)
 
-	#TODO: Take these out and change to getting one image
-
 	#Making an ImageData object for all of the regular images
 	AllImages = [ImageData.ImageData(os.path.join(root, name)) for 
 		root, dirs, files in os.walk(IMAGE_PATH) for name in files]
@@ -78,9 +69,7 @@ if __name__ == '__main__':
 		files]
 
 	#Let's get all possible values in lists
-	#TODO: Add color segmetation.  
-	#TODO: Make it easy to add algorithms
-	Algos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS']
+	Algos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS'] #Need to add floods
 	#Taking out grayscale: CV, MCV, FD
 	#Took out  'MCV', 'AC', FB, SC, CV, WS
 	#Quickshift(QS) takes a long time, so I'm taking it out for now.
@@ -114,7 +103,6 @@ if __name__ == '__main__':
 	
 	#Getting the seedpoint for floodfill
 
-	#TODO: Make seed point input parameter
 	#Dimensions of the imag
 	x = AllImages[0].getShape()[0]
 	y = AllImages[0].getShape()[1]
@@ -128,7 +116,6 @@ if __name__ == '__main__':
 	seedY = [iy for iy in range(0, y)]
 	seedZ = [z]
 
-	#Not used
 	AllVals = [Algos, betas, tolerance, scale, sigma, min_size,
 			  n_segments, compactness, iterations, ratio, kernel, 
 			  max_dists, random_seed, connectivity, mu, Lambdas, dt,
@@ -160,7 +147,6 @@ if __name__ == '__main__':
 	
 	#Here we register all the parameters to the toolbox
 	SIGMA_MIN, SIGMA_MAX, SIGMA_WEIGHT = 0, 1, 0.5	
-	#Perhaps weight iterations
 	ITER = 10
 	SMOOTH_MIN, SMOOTH_MAX, SMOOTH_WEIGHT = 1, 4, 0.5
 	BALLOON_MIN, BALLOON_MAX, BALLOON_WEIGHT = -1, 1, 0.9
@@ -225,11 +211,10 @@ if __name__ == '__main__':
 
 	#And we make our population
 	toolbox.register("population", tools.initRepeat, list, 
-		toolbox.individual, n=POPULATION)
+POPULATION = 134
 
 	pop = toolbox.population()
 	
-	#TODO: Use copy better
 	Images = [AllImages[0] for i in range(0, len(pop))]
 	ValImages = [ValImages[0] for i in range(0, len(pop))]
 
@@ -252,7 +237,7 @@ if __name__ == '__main__':
 	#mutpb = probability of mutation
 	#ngen = Number of generations
 
-	cxpb, mutpb, ngen = CROSSOVER, MUTATION, GENERATIONS
+GENERATIONS = 124
 	gen = 0
 
 	leng = len(pop)
@@ -270,9 +255,6 @@ if __name__ == '__main__':
 	pastMin = min(extractFits)
 
 	#while min(extractFits) > 0 and gen < ngen:
-	#TODO: Think about changing algorithm to:
-	#Calc fitness
-	#Update population
 	while gen < ngen:
 
 		gen += 1
@@ -293,7 +275,7 @@ if __name__ == '__main__':
 		#mutation
 		for mutant in offspring:
 			if random.random() < mutpb:
-				flipProb = FLIPPROB
+				flipProb = 0.5
 				toolbox.mutate(mutant, AllVals, flipProb)
 				del mutant.fitness.values
 
@@ -323,6 +305,7 @@ if __name__ == '__main__':
 		print(" Time: ", time.time() - initTime)
 		#Did we improve the population?
 		pastPop = pop
+		pastMean = mean
 		pastMin = min(extractFits)
 		if (mean >= pastMean):
 			#This population is worse than the one we had before
@@ -332,10 +315,10 @@ if __name__ == '__main__':
 				break
 			else:
 				continue
-		pastMean = mean
-
+		
 		#TODO: use tools.Statistics for this stuff
-	
+
+		
 	#We ran the population 'ngen' times. Let's see how we did:
 
 	best = hof[0]
@@ -356,5 +339,3 @@ if __name__ == '__main__':
 		best[22], best[23], best[24]))
 	img = Space.runAlgo()
 	cv2.imwrite("dummy.png", img)
-
-	#TODO: MAke lies of averages and make graph at end.

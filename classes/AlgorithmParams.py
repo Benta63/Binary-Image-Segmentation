@@ -59,6 +59,7 @@ class AlgorithmParams(object):
 		#flood_fill
 		self.seed_pointY = seed_pointY
 		self.seed_pointZ = seed_pointZ
+		
 
 
 	#Accessors
