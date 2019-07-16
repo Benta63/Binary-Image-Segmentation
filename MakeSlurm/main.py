@@ -40,8 +40,6 @@ FLIPPROB = 0.06
 CROSSOVER = 0.14
 
 
-
-
 if __name__ == '__main__':
 	initTime = time.time()
 	#To determine the seed for debugging purposes

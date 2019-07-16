@@ -26,6 +26,7 @@ class GeneticHelp(object):
 	random amount of indexes to change between the two.
 	'''
 	def skimageCrossRandom(np1, np2):
+		#TODO: Only change values associated with algorithm
 		assert(len(np1) == len(np2))
 		#The number of places that we'll cross
 		crosses = random.randrange(len(np1))
@@ -69,7 +70,7 @@ class GeneticHelp(object):
 			'CV': [13, 14, 2, 8, 15, 16],
 			'MCV': [8, 17, 18, 14],
 			'AC': [20, 4,  18, 19, 21],
-			'FD': [22, 13, 2, ], 
+			'FD': [22, 13, 2], 
 			#Note, index 22 is the seed point. Will have to used diff possible values
 			'FF': [22, 13, 2]
 		}
@@ -80,7 +81,7 @@ class GeneticHelp(object):
 			if randVal < flipProb:
 				#Then we mutate said value
 				if index == 22:
-					#Do some special shit
+					#Do some special
 					X = random.choice(posVals[22])
 					Y = random.choice(posVals[23])
 					Z = random.choice(posVals[24])
@@ -107,6 +108,7 @@ class GeneticHelp(object):
 		img1 = np.uint8(img1)
 		#print(img1.dtype, img2.dtype)
 		assert(img1.dtype == img2.dtype)
+		#TODO: Change to MSE
 		#Comparing the Structual Similarity Index (SSIM) of two images
 		ssim = skimage.measure.compare_ssim(img1, img2, win_size=3, 
 			multichannel=channel, gaussian_weights=True)

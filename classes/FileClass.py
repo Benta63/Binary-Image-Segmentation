@@ -13,12 +13,6 @@ class FileClass(object):
 
 	#https://stackoverflow.com/questions/50134468/convert-boolean-numpy-array-to-pillow-image
 	#Image.fromarray doesn't like boolean arrays. we first make a grayscale
-	# def imgGrey(data):
-	# 	if data.ravel()[0] == 0 or data.ravel()[0] == 1:
-	# 		return Image.fromarray(data * 255, mode='L').convert('1')
-	# 	else:
-	# 		#First we 
-
 	#Returns a black/white Image based on a boolean numpy array. 
 	def imgFromBytes(data):
 		size = data.shape[::1]
