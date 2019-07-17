@@ -10,6 +10,7 @@ from itertools import combinations
 import cv2
 from . import FileClass
 from .FileClass import FileClass
+from .AlgorithmHelper import AlgoHelp
 
 #from . import ImageData
 #from . import AlgorithmParams
@@ -30,6 +31,9 @@ class AlgorithmSpace(object):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
 		self.newVal = 134
+
+		self.incAlgos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS']
+
 	
 
 	#Algorithms
@@ -408,6 +412,24 @@ class AlgorithmSpace(object):
 			self.params.getConnect(), tolerance=
 			self.params.getTolerance())
 
+		for x in range(0, len(output)):
+			for y in range(0, len(output[0])):
+				#First check for grayscale
+				if len(output.shape) > 2:
+					#multichannel
+					if output[x][y][0] == self.newVal and output[x][y][1] == 0 and output[x][y][2] == 0:
+						#This is the correct value, leave it alone
+						continue
+					else:
+						#Incorrect, so change to black
+						for i in output[x][y]:
+							i = 0
+				else:
+					#grayscale
+					#We change it to black
+					if output[x][y] != self.newVal:
+						output[x][y] = 0
+
 		return output
 
 	'''
@@ -444,8 +466,10 @@ class AlgorithmSpace(object):
 		output = skimage.segmentation.clear_border(
 			labels=mask, bgval=134)
 		return output
+
 	#Runs the algorithm specified in params
 	def runAlgo(self):
+		#Need to add new algorithms to here
 		switcher = {
 			'RW': self.runRandomWalker,
 			'FB': self.__runFelzenszwalb,
@@ -463,25 +487,12 @@ class AlgorithmSpace(object):
 		#print(self.params.getImage().getDim())
 		#print(self.params.getImage().getImage().shape)
 
-		if self.params.getAlgo() in ['FB', 'SC', 'QS', 'CV', 'FD']:
-			'''print("IFF")
-			#print(func().shape)
-			img = self.runRandomWalker(func())
-			print(img.shape)
-			reshapeAs = [img.shape[0], img.shape[1], 3]
-			for i in range(0, len(img)):
-				for j in range(0, len(img[i])):
-					if img[i][j] == 1:
-						img[i][j] == []
-			cv2.imwrite("dummy.png", img)
-
-
-			print(self.runRandomWalker(func()).shape, func().shape)
-			print(self.runRandomWalker(func()))
-			'''
-			#print(self.__runClearBorder(func()).shape)
-			#print(self.runMarkBoundaries(func()).shape)
+		#If the algorithm returns a mask, add it to this list
+		if self.params.getAlgo() in AlgoHelp().needMask():
 			return FileClass.convertMask(func())
 			
 			#return self.func()
 		return func()
+
+
+
