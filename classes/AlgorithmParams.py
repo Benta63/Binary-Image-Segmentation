@@ -6,59 +6,57 @@ import random
 
 class AlgorithmParams(object):
 	#Reading in all of the data
-	def __init__(self, img, algo="", beta=0.0, tol=0.0, scale=0.0,
-		sigma=0.1, min_size=0, n_segments=2, compactness=0.001, 
-		iters=10, ratio=0.0, kernel=1.0, max_dist=1, random_seed=134, 
-		connectivity=1, mu=0.0, lambda1=1.0, lambda2=1.0, dt=0.0,
-		init_level_set_chan=None, init_level_set_morph=None,smoothing=1,
-		threshold='auto', alpha=0.0, balloon=0.0, seed_pointX=0, 
-		seed_pointY=0, seed_pointZ=0):
+	def __init__(self, img, individual):
 
 		#img is an ImageData object
 		self.Image = img #The image, usually an ImageData object
-		self.algorithm = algo #The string code for the algorithm
-		self.beta = beta #A parameter for randomWalker So, I should 
+		self.algorithm = individual[0] #The string code for the algorithm
+		self.beta = individual[1] #A parameter for randomWalker So, I should 
 		#take this out
-		self.tolerance = tol #A parameter for flood and flood_fill
-		self.scale = scale #A parameter for felzenszwalb
-		self.sigma = sigma #sigma value. A parameter for felzenswalb,
+		self.tolerance = individual[2] #A parameter for flood and flood_fill
+		self.scale = individual[3] #A parameter for felzenszwalb
+		self.sigma = individual[4] #sigma value. A parameter for felzenswalb,
 			#inverse_guassian_gradient, slic, and quickshift
-		self.min_size = min_size #A parameter for felzenszwalb
-		self.n_segments = n_segments #A parameter for slic
-		self.compactness = compactness #A parameter for slic and 
-		#watershed
-		self.iterations = iters #A parameter for both morphological 
+		self.min_size = individual[5] #A parameter for felzenszwalb
+		self.n_segments = individual[6] #A parameter for slic
+		self.iterations = individual[7] #A parameter for both morphological 
 		#algorithms
-		self.ratio = ratio #A parameter for ratio
-		self.kernel_size = kernel #A parameter for kernel_size
-		self.max_dist = max_dist #A parameter for quickshift
-		self.seed = random_seed #A parameter for quickshift, 
+		self.ratio = individual[8] #A parameter for ratio
+		self.kernel_size = individual[9] #A parameter for kernel_size
+		self.max_dist = individual[10] #A parameter for quickshift
+		self.seed = individual[11] #A parameter for quickshift, 
 			#and perhaps other random stuff
-		self.connectivity = connectivity #A parameter for flood and 
+		self.connectivity = individual[12] #A parameter for flood and 
 		#floodfill
-		self.mu = mu #A parameter for chan_vese
-		self.lambda1 = lambda1 #A parameter for chan_vese and 
+		self.compactness = individual[13] #A parameter for slic and 
+		#watershed
+	
+		self.mu = individual[14] #A parameter for chan_vese
+		self.lambda1 = individual[15][0] #A parameter for chan_vese and 
 		#morphological_chan_vese
-		self.lambda2 = lambda2 #A parameter for chan_vese and 
+		self.lambda2 = individual[15][1] #A parameter for chan_vese and 
 		#morphological_chan_vese
-		self.dt = dt #An algorithm for chan_vese
+		self.dt = individual[16] #An algorithm for chan_vese
 		#May want to make seperate level sets for different functions
 			#e.g. Morph_chan_vese vs morph_geo_active_contour
-		self.init_level_set_chan = init_level_set_chan #A parameter
+		self.init_level_set_chan = individual[17] #A parameter
 			#for chan_vese and morphological_chan_vese
-		self.init_level_set_morph = init_level_set_morph #A parameter
+		self.init_level_set_morph = individual[18] #A parameter
 			#for morphological_chan_vese 
-		self.smoothing = smoothing #An algorithm used in
+		self.smoothing = individual[19] #A parameter used in
 			#morphological_geodesic_active_contour
-		self.threshold=threshold #An parameter for 
+		self.threshold='auto' #A parameter for 
 			#morphological_geodesic_active_contour 
-		self.alpha = alpha #A parameter for inverse_guassian_gradient
-		self.balloon = balloon #A parameter for
+		self.alpha = individual[20] #A parameter for inverse_guassian_gradient
+		self.balloon = individual[21] #A parameter for
 			#morphological_geodesic_active_contour
-		self.seed_pointX = seed_pointX #A parameter for flood and 
+		self.seed_pointX = individual[22] #A parameter for flood and 
 		#flood_fill
-		self.seed_pointY = seed_pointY
-		self.seed_pointZ = seed_pointZ
+		self.seed_pointY = individual[23]
+		self.seed_pointZ = individual[24]
+
+
+		#ADD ADDITIONAL PARAMETERS HERE
 		
 
 

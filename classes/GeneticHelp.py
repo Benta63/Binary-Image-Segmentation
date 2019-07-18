@@ -1,11 +1,17 @@
+
+
 import random
 import numpy as np
 import skimage.measure
-from . import AlgorithmParams
-from . import AlgorithmSpace
 import cv2
 import copy
 from PIL import Image
+
+from . import AlgorithmParams
+from . import AlgorithmSpace
+from . import AlgorithmHelper
+from .AlgorithmHelper import AlgoHelp
+
 
 class GeneticHelp(object):
 
@@ -61,19 +67,7 @@ class GeneticHelp(object):
 			#Let's mutate
 			child[0] = random.choice(posVals[0])
 		#Now let's get the indexes (parameters) related to that value
-		switcher = {
-			'RW': [1, 2],
-			'FB': [3, 4, 5],
-			'SC': [6, 7, 8, 4, ],
-			'QS': [9, 10, 11, 12],
-			'WS': [7],
-			'CV': [13, 14, 2, 8, 15, 16],
-			'MCV': [8, 17, 18, 14],
-			'AC': [20, 4,  18, 19, 21],
-			'FD': [22, 13, 2], 
-			#Note, index 22 is the seed point. Will have to used diff possible values
-			'FF': [22, 13, 2]
-		}
+		switcher = AlgoHelp().algoIndexes()
 		indexes = switcher.get(child[0])
 
 		for index in indexes:
@@ -133,15 +127,7 @@ class GeneticHelp(object):
 
 		img = copy.deepcopy(copyImg)
 		#Making an AlorithmParams object
-		params = AlgorithmParams.AlgorithmParams(img, individual[0],
-			individual[1], individual[2], individual[3], individual[4],
-			individual[5], individual[6], individual[7], individual[8],
-			individual[9], individual[10], individual[11], 
-			individual[12], individual[13], individual[14], 
-			individual[15][0],individual[15][1], individual[16],
-			individual[17], individual[18], individual[19], 'auto',
-			individual[20], individual[21], individual[22], 
-			individual[23], individual[24])
+		params = AlgorithmParams.AlgorithmParams(img, individual)
 
 
 
@@ -161,36 +147,11 @@ class GeneticHelp(object):
 			'FD',#: Algo.runFlood,
 			'FF',#: Algo.runFloodFill
 		]
-		#Some algorithms cannot be used on grayscale images
-		GrayAlgos = {
-			'RW',#: Algo.runRandomWalker,
-			'WS',#: Algo.runWaterShed,
-			'CV',#: Algo.runChanVese,
-			'MCV',#: Algo.runMorphChanVese,
-			'AC',#: Algo.runMorphGeodesicActiveContour,
-			'FD',#: Algo.runFlood,			
-			'FF',#: Algo.runFloodFill
-		}
-		#Some algorithms are only good for colored images
-		RGBAlgos = {
-			'RW',#: Algo.runRandomWalker,
-			'FB',#: Algo.runFelzenszwalb,
-			'SC',#: Algo.runSlic, 
-			'QS',#: Algo.runQuickShift,
-			'WS',#: Algo.runWaterShed,
-			#HAVING SOME TROUBLE WITH AC. NEED TO RETUL
-			'AC',#: Algo.runMorphGeodesicActiveContour,
-			'FF'#: Algo.runFloodFill
-		}
 		#Some algorithms return masks as opposed to the full images
-		Masks = ['FB', 'SC', 'QS']
-		#Some algorithms return boolean arrays
-		BoolArrs = ['CV','FD']
 		#The functions in Masks and BoolArrs will need to pass through
 		#More functions before they are ready for the fitness function
-		switcher = GrayAlgos
+		switcher = AlgoHelp().channelAlgos(img)
 
-		if (img.getDim() > 2): switcher = RGBAlgos
 
 		#If the algorithm is not right for the image, returna large 
 		#	number
