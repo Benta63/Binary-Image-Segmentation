@@ -11,6 +11,7 @@ import cv2
 from . import FileClass
 from .FileClass import FileClass
 from .AlgorithmHelper import AlgoHelp
+from PIL import Image
 
 #from . import ImageData
 #from . import AlgorithmParams
@@ -31,7 +32,7 @@ class AlgorithmSpace(object):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
 		self.newVal = 134
-
+		### APPEND THE ALGORITHM TO THE LIST
 		self.incAlgos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS']
 
 	
@@ -63,7 +64,7 @@ class AlgorithmSpace(object):
 	#Code for algorithms == RW
 	#Not using RandomWalker because labels complicates the searchspace
 		
-	def runRandomWalker(self, mask):
+	def __runRandomWalker(self, mask):
 		#Let's deterime what mode to use
 		mode = ""
 		if len(self.params.getImage().getImage()) < 512 :
@@ -411,26 +412,32 @@ class AlgorithmSpace(object):
 			self.params.getSeedPoint(), self.newVal, connectivity=
 			self.params.getConnect(), tolerance=
 			self.params.getTolerance())
+		try:
+			#I'm not sure if this will work on grayscale
+			image = Image.fromarray(output.astype('uint8'), '1')
+		except ValueError:
+			image = Image.fromarray(output.astype('uint8'), 'RGB')
 
-		for x in range(0, len(output)):
-			for y in range(0, len(output[0])):
+		width = image.width
+		height = image.width
+
+
+		#Converting the background to black
+		for x in range(0, width):
+			for y in range(0, height):
 				#First check for grayscale
-				if len(output.shape) > 2:
-					#multichannel
-					if output[x][y][0] == self.newVal and output[x][y][1] == 0 and output[x][y][2] == 0:
-						#This is the correct value, leave it alone
-						continue
-					else:
-						#Incorrect, so change to black
-						for i in output[x][y]:
-							i = 0
+				pixel = image.getpixel((x,y))
+				if pixel[0] == self.newVal:
+					image.putpixel((x,y), self.newVal)
+					continue
 				else:
-					#grayscale
-					#We change it to black
-					if output[x][y] != self.newVal:
-						output[x][y] = 0
+					image.putpixel((x,y), 0)
+					#print(image.getpixel((x,y)))
+#					print("black: ", image.getpixel((x,y)))
 
-		return output
+		#image.convert(mode='L')
+		pic = np.array(image)
+		return pic
 
 	'''
 	#mark_boundaries
@@ -456,7 +463,7 @@ class AlgorithmSpace(object):
 	'''
 	#Uses Felzenszwalb, slic,
 
-	def runMarkBoundaries(self, mask):
+	def __runMarkBoundaries(self, mask):
 		output = skimage.segmentation.mark_boundaries(
 			self.params.getImage().getImage(), mask, mode='inner',
 			background_label=134)
@@ -467,11 +474,14 @@ class AlgorithmSpace(object):
 			labels=mask, bgval=134)
 		return output
 
+
+	### ADD NEW ALGORITHMS HERE	
+
 	#Runs the algorithm specified in params
 	def runAlgo(self):
 		#Need to add new algorithms to here
 		switcher = {
-			'RW': self.runRandomWalker,
+			'RW': self.__runRandomWalker,
 			'FB': self.__runFelzenszwalb,
 			'SC': self.__runSlic,
 			'QS': self.__runQuickShift,
