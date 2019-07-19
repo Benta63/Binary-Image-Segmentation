@@ -49,6 +49,8 @@ For additional commands in scoop, refer to https://scoop.readthedocs.io/en/0.7/u
 ### Wanted Features
 Primarily, refer to the TODO notes
 #### *main.py*
+* Make it possible to 'cheat'
+  * That is, to seed certain algorithms into the search space. If you already know an algorithm with parameters that may work well for the dataset, you should be able to suggest that algorithm.
 * Make the global varialbes changeable by input parameters.
 * Reduce the memory usage of the program.
   * Around line 80, we make lists of all the paths to all of the images. As we are only looking at one image from each dataset, we only need a single path.
@@ -56,6 +58,7 @@ Primarily, refer to the TODO notes
 * Currently, the seedpoint for the Flood and Flood_Fill algorithms are selected using a genetic algorithm. It would be helpful if this could be an optional input argument.
   * Perhaps input a range of values?
 * Perhaps change the main while loop to Calculate the fitness and then update the population. as opposed to:
+* Implement a save state function. This is detailed here: https://deap.readthedocs.io/en/master/tutorials/advanced/checkpoint.html
 Calculate Fitness
 while
    Update population
