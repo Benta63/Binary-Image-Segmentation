@@ -36,13 +36,13 @@ For additional commands in scoop, refer to https://scoop.readthedocs.io/en/0.7/u
 
 ### Features
 * In order to change configurations of the program, edit the global variables at the top of the main. 
- * The paths refer to where the input and groundtruth image datasets are
- * SEED is the seed used in the quickshift algorithm. The quickshift algorithm accepts a seed with the side as a C long, however, this size is platfomr dependent.
- * The POPULATION refers to the amount of individuals for the genetic algorithm.
- * GENERATIONS refers to how long the algorithm will run for if it does not find a solution.
- * MUTATION refers to chance for each individual to be mutated. It should be between 0 and 1.
- * FLIPPROB refers to the chance that each associated with the algorithm in question will be mutated. This value should be between 0 and 1.
- * CROSSOVER is the chance of CROSSOVER for any two individuals. This value should be between 0 and 1.
+  * The paths refer to where the input and groundtruth image datasets are
+  * SEED is the seed used in the quickshift algorithm. The quickshift algorithm accepts a seed with the side as a C long, however, this size is platfomr dependent.
+  * The POPULATION refers to the amount of individuals for the genetic algorithm.
+  * GENERATIONS refers to how long the algorithm will run for if it does not find a solution.
+  * MUTATION refers to chance for each individual to be mutated. It should be between 0 and 1.
+  * FLIPPROB refers to the chance that each associated with the algorithm in question will be mutated. This value should be between 0 and 1.
+  * CROSSOVER is the chance of CROSSOVER for any two individuals. This value should be between 0 and 1.
 * Prints the best image segmentation found to an image file called "dummy.png"
 * Keeps track of the average fitness for each generation and stores it in a text file called "newfile.txt"
 
@@ -51,9 +51,10 @@ Primarily, refer to the TODO notes
 #### *main.py*
 * Make the global varialbes changeable by input parameters.
 * Reduce the memory usage of the program.
- * Around line 80, we make lists of all the paths to all of the images. As we are only looking at one image from each dataset, we only need a single path.
- * We do not always copy the image correctly in every algorithm. As a quick fix, we made a list of a numpy array representation of the images for every individual in the population.
+  * Around line 80, we make lists of all the paths to all of the images. As we are only looking at one image from each dataset, we only need a single path.
+  * We do not always copy the image correctly in every algorithm. As a quick fix, we made a list of a numpy array representation of the images for every individual in the population.
 * Currently, the seedpoint for the Flood and Flood_Fill algorithms are selected using a genetic algorithm. It would be helpful if this could be an optional input argument.
+  * Perhaps input a range of values?
 * Perhaps change the main while loop to Calculate the fitness and then update the population. as opposed to:
 Calculate Fitness
 while
@@ -61,12 +62,12 @@ while
    Calculate fitness
 #### AlgorithmSpace.py in GAHelpers
 * Add a color segmentation algorithm
- * Add any image segmentation algorithm following the notes for Adding Additional Algorithms
+  * Add any image segmentation algorithm following the notes for Adding Additional Algorithms
 ### GeneticHelp.py in GAHelpers
 * The *mutate* function only mutates the values associated with the algorithm that it specifies. This functionality could be useful in the crossover function, *skimageCrossRandom*.
 * Our fitness function currently uses the structual similarity index between two images. While this is useful in comparing two images, it is subpar with comparing segmentations. 
- * Change fitness function to evaluate based on the mean squared error
- * Or, change the fitness function to evaluate based on a better method. (I'm not an expert)
+  * Change fitness function to evaluate based on the mean squared error
+  * Or, change the fitness function to evaluate based on a better method. (I'm not an expert)
 
 ## Adding Additional Algorithms
 In order to add additional algorithms, it is necessary to edit three different files. Additionally, it is necessary to come up with some information about said algorithm. These are namely:
