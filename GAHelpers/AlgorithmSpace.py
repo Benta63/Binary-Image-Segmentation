@@ -1,5 +1,7 @@
-#Strongly coupled with AlgorithmParams class
+#Strongly coupled with AlgorithmParams and AlgorithmHelper
 #https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.active_contour
+
+#TODO: Add color segmetation.  
 
 import numpy as np
 import pandas as pd
@@ -32,8 +34,6 @@ class AlgorithmSpace(object):
 			#This is at least a 3D array, so multichannel
 			self.channel = True
 		self.newVal = 134
-		### APPEND THE ALGORITHM TO THE LIST
-		self.incAlgos = ['FF', 'MCV', 'AC', 'FB', 'CV', 'WS', 'QS']
 
 	
 
@@ -479,7 +479,6 @@ class AlgorithmSpace(object):
 
 	#Runs the algorithm specified in params
 	def runAlgo(self):
-		#Need to add new algorithms to here
 		switcher = {
 			'RW': self.__runRandomWalker,
 			'FB': self.__runFelzenszwalb,
@@ -491,13 +490,14 @@ class AlgorithmSpace(object):
 			'AC': self.__runMorphGeodesicActiveContour,
 			'FD': self.__runFlood,
 			'FF': self.__runFloodFill
+			### Add the new algorithm here.
 		}
 		func = switcher.get(self.params.getAlgo(), "Invalid code")
-		#These algrotihms only give masks, not the whole picture
-		#print(self.params.getImage().getDim())
-		#print(self.params.getImage().getImage().shape)
+		
+		#These algrotihms only give masks, so are not usable 
+		#in the fitness function
+		
 
-		#If the algorithm returns a mask, add it to this list
 		if self.params.getAlgo() in AlgoHelp().needMask():
 			return FileClass.convertMask(func())
 			

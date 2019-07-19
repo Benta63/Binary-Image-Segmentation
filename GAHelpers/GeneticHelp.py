@@ -123,7 +123,7 @@ class GeneticHelp(object):
 	valImg is an ImageData object of the validation image
 	individual is the parameter that we chose
 	'''
-	def runAlgo(copyImg, valImg, individual):
+	def runAlgo(copyImg, groundImg, individual):
 
 		img = copy.deepcopy(copyImg)
 		#Making an AlorithmParams object
@@ -167,7 +167,7 @@ class GeneticHelp(object):
 		#Running the fitness function
 
 		evaluate = GeneticHelp.__FitnessFunction(np.array(img), 
-			valImg.getImage(), len(np.array(img).shape))
+			groundImg.getImage(), len(np.array(img).shape))
 		#Explicitely freeing memory
 		del img
 		del valImg

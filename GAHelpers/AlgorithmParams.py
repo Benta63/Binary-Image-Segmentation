@@ -56,7 +56,9 @@ class AlgorithmParams(object):
 		self.seed_pointZ = individual[24]
 
 
-		#ADD ADDITIONAL PARAMETERS HERE
+		### ADD ADDITIONAL PARAMETERS HERE
+		#Format:
+		#self.new_param = individual[last_num + 1]
 		
 
 

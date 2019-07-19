@@ -17,17 +17,17 @@ from scoop import futures
 import cv2
 import time
 
-from classes import ImageData
-from classes import AlgorithmSpace
-from classes.AlgorithmSpace import AlgorithmSpace
-from classes import AlgorithmParams
+from GAHelpers import ImageData
+from GAHelpers import AlgorithmSpace
+from GAHelpers.AlgorithmSpace import AlgorithmSpace
+from GAHelpers import AlgorithmParams
 
-from classes import FileClass
-from classes.FileClass import FileClass
-from classes import GeneticHelp
-from classes.GeneticHelp import GeneticHelp as GA
-from classes import RandomHelp
-from classes.RandomHelp import RandomHelp as RandHelp
+from GAHelpers import FileClass
+from GAHelpers.FileClass import FileClass
+from GAHelpers import GeneticHelp
+from GAHelpers.GeneticHelp import GeneticHelp as GA
+from GAHelpers import RandomHelp
+from GAHelpers.RandomHelp import RandomHelp as RandHelp
 
 
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'

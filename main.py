@@ -1,4 +1,4 @@
-#TODO: MAJOR: Make simple to add algorithms AND Seed search space
+#TODO: MAJOR: Seed search space
 #EMPHASIZE: We knew that it would not converge. good first step. future work is cool. What are bad numbers
 #Takeaways: built framework, validated frame, verified hypothesis (it didn't work), attempted scaling.
 #Comment in readme about pillow using 3.5.3. Can change pillow to matplotlib.
@@ -24,20 +24,20 @@ import scoop
 from scoop import futures
 import cv2
 import time
-#TODO: Change folder name to not classes 
-from classes import ImageData
-from classes import AlgorithmSpace
-from classes.AlgorithmSpace import AlgorithmSpace
-from classes import AlgorithmParams
 
-from classes import FileClass
-from classes.FileClass import FileClass
-from classes import AlgorithmHelper
-from classes.AlgorithmHelper import AlgoHelp
-from classes import GeneticHelp
-from classes.GeneticHelp import GeneticHelp as GA
-from classes import RandomHelp
-from classes.RandomHelp import RandomHelp as RandHelp
+from GAHelpers import ImageData
+from GAHelpers import AlgorithmSpace
+from GAHelpers.AlgorithmSpace import AlgorithmSpace
+from GAHelpers import AlgorithmParams
+
+from GAHelpers import FileClass
+from GAHelpers.FileClass import FileClass
+from GAHelpers import AlgorithmHelper
+from GAHelpers.AlgorithmHelper import AlgoHelp
+from GAHelpers import GeneticHelp
+from GAHelpers.GeneticHelp import GeneticHelp as GA
+from GAHelpers import RandomHelp
+from GAHelpers.RandomHelp import RandomHelp as RandHelp
 
 
 
@@ -45,7 +45,7 @@ from classes.RandomHelp import RandomHelp as RandHelp
 IMAGE_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_plant'
 
 #TODO: Change validation to ground_truth
-VALIDATION_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
+GROUNDTRUTH_PATH = 'Image_data\\Coco_2017_unlabeled\\rgbd_new_label'
 #Quickshift relies on a C long. As this is platform dependent, I will change
 #this later. 
 SEED = 134
@@ -60,8 +60,8 @@ if __name__ == '__main__':
 	initTime = time.time()
 	#To determine the seed for debugging purposes
 	seed = random.randrange(sys.maxsize)
-	#seed = SEED
-	rng = random.Random(seed)
+	random.seed(seed)
+
 	print("Seed was:", seed)
 
 	#Will later have user input to find where the images are
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 		print ('ERROR: Directory \"%s\" does not exist'%IMAGE_PATH)
 		sys.exit(1)
 
-	if(FileClass.check_dir(VALIDATION_PATH) == False):
+	if(FileClass.check_dir(GROUNDTRUTH_PATH) == False):
 		print("ERROR: Directory \"%s\" does not exist"%VALIDATION_PATH)
 		sys.exit(1)
 
@@ -82,13 +82,12 @@ if __name__ == '__main__':
 		root, dirs, files in os.walk(IMAGE_PATH) for name in files]
 
 	#Making an ImageData object for all of the labeled images
-	ValImages = [ImageData.ImageData(os.path.join(root, name)) for
+	GroundImages = [ImageData.ImageData(os.path.join(root, name)) for
 		root, dirs, files in os.walk(VALIDATION_PATH) for name in
 		files]
 
 	#Let's get all possible values in lists
-	#TODO: Add color segmetation.  
-	#TODO: Make it easy to add algorithms
+
 	#TODO: Make seed point input parameter
 	#Getting the seedpoint for floodfill
 	#Dimensions of the image
@@ -140,15 +139,19 @@ if __name__ == '__main__':
 	#Keeps track of the best individual from any population
 	hof = None
 	start_gen = 0
+
 	#TODO: Use copy better
 	Images = [AllImages[0] for i in range(0, POPULATION)]
-	ValImages = [ValImages[0] for i in range(0, POPULATION)]
+	GroundImages = [GroundImages[0] for i in range(0, POPULATION)]
+	### TODO: Implement a save-state function:
+	# https://deap.readthedocs.io/en/master/tutorials/advanced/checkpoint.html
+
 	'''try:
 		#A file name was given, so we load it
 		with open(sys.argv[1], "r") as cp_file:
 			cp = pickle.load(cp_file)
 		pop = cp["population"]
-		fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
+		fitnesses = list(map(toolbox.evaluate, Images, GroundImages, pop))
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
 
@@ -157,14 +160,14 @@ if __name__ == '__main__':
 		random.setstate(cp["rndstate"])
 	except IndexError:
 		pop = toolbox.population()
-		fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
+		fitnesses = list(map(toolbox.evaluate, Images, GroundImages, pop))
 	
 		for ind, fit in zip(pop, fitnesses):
 			ind.fitness.values = fit
 		hof = tools.HallOfFame(1)
 	'''
 	pop = toolbox.population()
-	fitnesses = list(map(toolbox.evaluate, Images, ValImages, pop))
+	fitnesses = list(map(toolbox.evaluate, Images, GroundImages, pop))
 
 	for ind, fit in zip(pop, fitnesses):
 		ind.fitness.values = fit
@@ -232,7 +235,7 @@ if __name__ == '__main__':
 		#Let's just evaluate the mutated and crossover individuals
 		invalInd = [ind for ind in offspring if not ind.fitness.valid]
 		NewImage = [AllImages[0] for i in range(0, len(invalInd))]
-		NewVal = [ValImages[0] for i in range(0, len(invalInd))]
+		NewVal = [GroundImages[0] for i in range(0, len(invalInd))]
 		fitnesses = map(toolbox.evaluate, NewImage, NewVal, invalInd)
 		
 		for ind, fit in zip(invalInd, fitnesses):
@@ -293,5 +296,4 @@ if __name__ == '__main__':
 	for i in BestAvgs:
 		file.write(str(i) + "\n")
 	file.close()
-
-	#TODO: MAke lists of averages and make graph at end.
+	
