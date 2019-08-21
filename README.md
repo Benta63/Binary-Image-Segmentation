@@ -30,19 +30,36 @@ First install all of the necessary packages.
 * copy
 
 ### Commands
-Type *python main.py* To run the program regularly
-For parallelization *python -m scoop main.py*
+
+#### Input arguments
+The input arguments are as follows: Seed, Population, Generation, Mutation chance, Mutation Probability and, Crossover chance.
+
+##### SEED
+The SEED is used in the quickshift algorithm. The quickshift algorithm accepts a seed that is a C long, however, the length of a C long is platform dependent. Additionally, Seed should be an integer. If you want to set the seed of the whole program, go to after all of the error checking of the input arguments (try/except cases). This should be around line 130.
+
+##### POPULATION
+The POPULATION refers to the amount of individuals in the genetic algorithm. This should be a positive integer
+
+##### GENERATIONS
+The GENERATIONS refers to the ammount of generations that the algorithm will run for if it does not find a solution This should be a positive integer.
+
+##### MUTATION
+The MUTATION variable refers to the chance for each individual to be mutated. As it is a percentage, it is represented as a float from 0 to 1.
+
+##### FLIPPROB
+The FLIPPROB variable is very much linked to the mutation chance. It represents the chance that each value associated with the algorithm in question will be mutated. As it is a percentage, this value should be a float from 0 to 1.
+
+##### CROSSOVER
+The CROSSOVER variable refers to the crossover chance for any two individuals. The value is a percentage and should be a float from 0 to 1.
+
+###
+An example of running the program would be *python main.py 134 10 10 0.5 1 0.5* To run the program regularly.
+For parallelization *python -m scoop main.py 134 10 10 0.5 1 0.5*.
 For additional commands in scoop, refer to https://scoop.readthedocs.io/en/0.7/usage.html#how-to-launch-scoop-programs
 
 ### Features
 * In order to change configurations of the program, edit the global variables at the top of the main. 
   * The paths refer to where the input and groundtruth image datasets are
-  * SEED is the seed used in the quickshift algorithm. The quickshift algorithm accepts a seed with the side as a C long, however, this size is platfomr dependent.
-  * The POPULATION refers to the amount of individuals for the genetic algorithm.
-  * GENERATIONS refers to how long the algorithm will run for if it does not find a solution.
-  * MUTATION refers to chance for each individual to be mutated. It should be between 0 and 1.
-  * FLIPPROB refers to the chance that each associated with the algorithm in question will be mutated. This value should be between 0 and 1.
-  * CROSSOVER is the chance of CROSSOVER for any two individuals. This value should be between 0 and 1.
 * Prints the best image segmentation found to an image file called "dummy.png"
 * Keeps track of the average fitness for each generation and stores it in a text file called "newfile.txt"
 
@@ -51,7 +68,6 @@ Primarily, refer to the TODO notes
 #### *main.py*
 * Make it possible to 'cheat'
   * That is, to seed certain algorithms into the search space. If you already know an algorithm with parameters that may work well for the dataset, you should be able to suggest that algorithm.
-* Make the global varialbes changeable by input parameters.
 * Reduce the memory usage of the program.
   * Around line 80, we make lists of all the paths to all of the images. As we are only looking at one image from each dataset, we only need a single path.
   * We do not always copy the image correctly in every algorithm. As a quick fix, we made a list of a numpy array representation of the images for every individual in the population.
@@ -59,10 +75,14 @@ Primarily, refer to the TODO notes
   * Perhaps input a range of values?
 * Perhaps change the main while loop to Calculate the fitness and then update the population. as opposed to:
 * Implement a save state function. This is detailed here: https://deap.readthedocs.io/en/master/tutorials/advanced/checkpoint.html
+* Additional error checking for the SEED variable
+ * The SEED has to be a C long. A C long is platform dependent, but currentle, it is not being checked for. 
+* Redo the overall while loop to:
 Calculate Fitness
 while
    Update population
    Calculate fitness
+   
 #### AlgorithmSpace.py in GAHelpers
 * Add a color segmentation algorithm
   * Add any image segmentation algorithm following the notes for Adding Additional Algorithms
@@ -95,7 +115,7 @@ The next part to edit has to do with the channel of the algorithm. If the algori
 Next, if the algorithm returns a boolean mask, add the character code to the *self.mask* list. Additionally, add the character code to the *self.usedAlgos* list.
 It is also important to have the range of values for each parameter. So, for each parameter, with list comprehension, add the range of values for each parameter to *self.PosVals* in the same order that the parameters are listed in *AlgorithmParams.py*
 
-#### *makeToolbox*
+#### *makeToolbox.py*
 Make toolbox creates a Toolbox to use with the deap library. It is important to register the parameters to the toolbox. Right before the *func_seq* list, there is a capitalized comment to add more parameters to the toolbox. Follow the format listed to add your parameters. If you want to weight certain values more than others, use *RandHelp.weighted_choice* as opposed to *random.choice*. It is also important to add the the parameters to the *func_seq* list in the same order that they appear in *AlgorithmParams.py*.
 
 ### *AlgorithmSpace.py*
@@ -104,8 +124,9 @@ Finally, add the algorithm to the *switcher* dictionary in *runAlgo*. The key wi
 
 #### Notes
 * May want to weight QuickShift algorithm as it takes significantly more time to run. Would need to set a timeit function
+ * Additionally, weight all algorithms by time taken.
 * LabelOne changes already labeled images to binary.
   * Useful if the images are labeled with more than two colors
 * May have to clone scikit-image from git, as regular installation installs 0.14 and does not include flood_fill
-* We used Python 3.5.3 in order to use the Pillow library. However, with some changes to how we view images, it may be possible to use matplotlib instead. If we use matplotlib, we can use a later version of Python.
+* We used Python 3.5.3 in order to use the Pillow library. However, with some changes to how we view images, it may be possible to use matplotlib instead. If we use matplotlib, we can use any version of Python.
   
