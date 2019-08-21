@@ -167,9 +167,5 @@ class GeneticHelp(object):
 		#Running the fitness function
 
 		evaluate = GeneticHelp.__FitnessFunction(np.array(img), 
-			groundImg.getImage(), len(np.array(img).shape))
-		#Explicitely freeing memory
-		del img
-		del valImg
-		
+			groundImg.getImage(), len(np.array(img).shape))		
 		return (evaluate)

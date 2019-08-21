@@ -57,6 +57,70 @@ CROSSOVER = 0
 
 
 if __name__ == '__main__':
+	
+	#The input arguments are Seed, population, generations, mutation, flipprob, crossover
+	SEED = int(sys.argv[1])
+	MUTATION = float(sys.argv[3])
+	FLIPPROB = float()
+
+	try:
+		SEED = int(sys.argv[1])
+	except ValueError:
+		print("Incorrect SEED value, please input an integer")
+	try:
+		POPULATION = int(sys.argv[2])
+		assert(POPULATION > 0)
+	except ValueError:
+		print("Incorrect POPULATION value: Please input a positive integer.")
+		sys.exit(2)
+	except AssertionError:
+		print("Incorrect POPULATION value: Please input a positve integer.")
+		sys.exit(2)
+
+	try:
+		GENERATIONS = int(sys.argv[3])
+	except ValueError:
+		print("Incorrect value for GENERATIONS. Please input a positive integer.")
+		sys.exit(2)
+	except AssertionError:
+		print("Incorrect value for GENERATIONS. Please input a positive integer.")
+		sys.exit(2)
+
+	try:
+		MUTATION = float(sys.argv[4])
+		assert(0 <= MUTATION <= 1)
+
+	except ValueError: 
+		print ("Please make sure that MUTATION is a positive percentage (decimal).")
+		sys.exit(2)
+	except AssertionError:
+		print("Please make sure that MUTATION is a positive percentage (decimal).")
+		sys.exit(2)
+
+	try:
+		FLIPPROB = float(sys.argv[5])
+		assert(0 <= FLIPPROB <= 1)
+	except ValueError:
+		print("Incorrect value for FLIPPROB. Please input a positive percentage (decimal).")
+		sys.exit(2)
+	except AssertionError:
+		print("Incorrect value for FLIPPROB. Please input a positive percentage (decimal).")
+		sys.exit(2)
+
+	try:
+		CROSSOVER = float(sys.argv[6])
+		assert(0 <= CROSSOVER <= 1)
+	except ValueError:
+		print("Incorrect value for CROSSOVER. Please input a positive percentage (decimal).")
+		sys.exit(2)
+	except AssertionError:
+		print("Incorrect value for CROSSOVER. Please input a positive percentage (decimal).")
+		sys.exit(2)
+
+	
+	#Need to error check these
+
+
 	initTime = time.time()
 	#To determine the seed for debugging purposes
 	seed = random.randrange(sys.maxsize)
@@ -83,7 +147,7 @@ if __name__ == '__main__':
 
 	#Making an ImageData object for all of the labeled images
 	GroundImages = [ImageData.ImageData(os.path.join(root, name)) for
-		root, dirs, files in os.walk(VALIDATION_PATH) for name in
+		root, dirs, files in os.walk(GROUNDTRUTH_PATH) for name in
 		files]
 
 	#Let's get all possible values in lists
